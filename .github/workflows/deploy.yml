@@ -1,0 +1,84 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permissions needed to deploy to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; a newer push cancels an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Work out the base path and canonical URL from the repository itself, so the
+      # same build is correct for a project page, a user/org page, or a custom domain.
+      # Nothing is hardcoded: add public/CNAME (a custom domain) and the base becomes "/".
+      - name: Resolve base path and site URL
+        id: cfg
+        run: |
+          owner="${{ github.repository_owner }}"
+          repo="${{ github.event.repository.name }}"
+          owner_lc=$(printf '%s' "$owner" | tr '[:upper:]' '[:lower:]')
+
+          if [ -f public/CNAME ]; then
+            # Custom domain: serve from the domain root.
+            domain=$(head -n1 public/CNAME | tr -d '[:space:]')
+            base="/"
+            site="https://${domain}"
+          elif [ "$repo" = "${owner_lc}.github.io" ]; then
+            # User/org root page: serves from the domain root.
+            base="/"
+            site="https://${owner_lc}.github.io"
+          else
+            # Project page: served under /<repo>/.
+            base="/${repo}/"
+            site="https://${owner_lc}.github.io/${repo}"
+          fi
+
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "site=$site" >> "$GITHUB_OUTPUT"
+          echo "Resolved base=$base site=$site"
+
+      - name: Build
+        run: npm run build
+        env:
+          BASE_PATH: ${{ steps.cfg.outputs.base }}
+          SITE_URL: ${{ steps.cfg.outputs.site }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

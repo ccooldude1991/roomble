@@ -1,0 +1,20 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist", "node_modules"],
+  "compilerOptions": {
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "allowJs": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@config/*": ["src/config/*"],
+      "@games/*": ["src/games/*"],
+      "@services/*": ["src/services/*"],
+      "@design/*": ["src/design/*"],
+      "@juice/*": ["src/juice/*"],
+      "@shell/*": ["src/shell/*"]
+    }
+  }
+}
