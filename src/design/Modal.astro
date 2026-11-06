@@ -1,0 +1,107 @@
+---
+/*
+ * Modal dialog for pause menus and overlays. Built on the native <dialog> for
+ * focus trapping and Esc handling. Open/close from script:
+ *   const d = document.getElementById(id) as HTMLDialogElement; d.showModal();
+ *
+ * Slots: default = body; "footer" = action row.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  id: string;
+  title: string;
+  /** Show the top-right close button. */
+  dismissible?: boolean;
+  class?: string;
+}
+const { id, title, dismissible = true, class: className } = Astro.props;
+const hasFooter = Astro.slots.has('footer');
+---
+
+<dialog id={id} class:list={['modal', className]} aria-labelledby={`${id}-title`}>
+  <div class="modal__head">
+    <h2 id={`${id}-title`} class="modal__title">{title}</h2>
+    {
+      dismissible && (
+        <form method="dialog">
+          <button class="modal__close" aria-label="Close">
+            <Icon name="close" size={20} />
+          </button>
+        </form>
+      )
+    }
+  </div>
+  <div class="modal__body"><slot /></div>
+  {
+    hasFooter && (
+      <div class="modal__footer">
+        <slot name="footer" />
+      </div>
+    )
+  }
+</dialog>
+
+<style>
+  .modal {
+    width: min(92vw, 440px);
+    color: var(--ticket);
+    background: var(--bezel);
+    border: var(--panel-border);
+    border-radius: var(--r-cabinet);
+    padding: var(--sp-5);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4);
+  }
+  .modal::backdrop {
+    background: rgba(10, 4, 20, 0.72);
+    backdrop-filter: none; /* no frosted blur, per anti-generic rules */
+  }
+  .modal[open] {
+    animation: modal-in var(--t-base) var(--ease-out);
+  }
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
+  .modal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+  .modal__title {
+    margin: 0;
+    font-size: var(--fs-3);
+  }
+  .modal__close {
+    display: inline-flex;
+    padding: 6px;
+    color: var(--ticket-dim);
+    background: transparent;
+    border: none;
+    border-radius: var(--r-chip);
+  }
+  .modal__close:hover {
+    color: var(--ticket);
+  }
+
+  .modal__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-top: var(--sp-5);
+  }
+  .modal__footer :global(.btn) {
+    flex: 1 1 auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .modal[open] {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Cabinet from '../design/Cabinet.astro';
+import ArcadeButton from '../design/ArcadeButton.astro';
+import { getEntry } from '../games/registry';
+import { DAILY_TIMEZONE } from '../config/site';
+
+const base = import.meta.env.BASE_URL;
+const href = (p: string) => `${base}${p.replace(/^\//, '')}`;
+const rungs = getEntry('rungs');
+---
+
+<BaseLayout title="Daily" description="One puzzle a day, the same for everyone.">
+  <div class="container daily-page">
+    <h1>Daily</h1>
+    <p class="daily-page__lede">
+      One puzzle a day, the same for everyone. A new one unlocks every midnight in Singapore
+      time, so the whole arcade climbs together.
+    </p>
+
+    {
+      rungs && (
+        <div class="daily-page__cabinet">
+          <Cabinet title={`Today's ${rungs.meta.title}`} color={rungs.color} aspect="16 / 9">
+            <div class="daily-page__screen">
+              <p class="daily-page__pitch">{rungs.meta.tagline}</p>
+              <p class="daily-page__soon">Coming soon</p>
+            </div>
+            <Fragment slot="controls">
+              <ArcadeButton variant="primary" href={href(`games/${rungs.meta.slug}`)}>
+                Open the cabinet
+              </ArcadeButton>
+              <span class="daily-page__streak">
+                streak <span class="daily-page__streak-num">0</span>
+              </span>
+            </Fragment>
+          </Cabinet>
+        </div>
+      )
+    }
+
+    <section class="daily-page__how">
+      <h2>How the daily works</h2>
+      <ul>
+        <li>Everyone gets the same puzzle each day.</li>
+        <li>Finish it to keep your streak going; miss a day and the streak resets.</li>
+        <li>Puzzles roll over at midnight, {DAILY_TIMEZONE.replace('_', ' ')}.</li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .daily-page {
+    padding-top: var(--sp-6);
+  }
+  .daily-page__lede {
+    color: var(--ticket-dim);
+    font-size: var(--fs-2);
+    max-width: 50ch;
+  }
+  .daily-page__cabinet {
+    max-width: 680px;
+    margin-block: var(--sp-5);
+  }
+  .daily-page__screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-3);
+    height: 100%;
+    padding: var(--sp-5);
+    text-align: center;
+  }
+  .daily-page__pitch {
+    margin: 0;
+    max-width: 30ch;
+    color: var(--ticket);
+  }
+  .daily-page__soon {
+    margin: 0;
+    font-family: var(--font-hud);
+    font-size: var(--fs-3);
+    color: var(--marquee);
+    text-shadow: var(--glow-marquee);
+  }
+  .daily-page__streak {
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
+  }
+  .daily-page__streak-num {
+    font-family: var(--font-hud);
+    font-size: var(--fs-2);
+    color: var(--phosphor);
+    text-shadow: var(--glow-phosphor);
+    margin-left: var(--sp-1);
+  }
+  .daily-page__how {
+    margin-top: var(--sp-6);
+  }
+  .daily-page__how ul {
+    color: var(--ticket-dim);
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+</style>

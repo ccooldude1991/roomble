@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_NAME } from '../config/site';
+
+const base = import.meta.env.BASE_URL;
+const href = (p: string) => `${base}${p.replace(/^\//, '')}`;
+---
+
+<BaseLayout title="About" description={`What ${SITE_NAME} is and how it's built.`}>
+  <div class="container prose">
+    <h1>About {SITE_NAME}</h1>
+    <p>
+      {SITE_NAME} is a small arcade of original browser games. Every game is built here from
+      scratch — the art, the sounds and the rules — and tuned to feel good in short bursts, whether
+      you're on a phone in a queue or at a desk on a break.
+    </p>
+    <p>
+      The idea is simple: walk onto the floor, pick a cabinet, and play in one tap. No downloads, no
+      sign-up. Scores are kept on your own device for now; global high-score tables come later.
+    </p>
+
+    <h2>How it's made</h2>
+    <p>
+      The site is a static site, which keeps it fast and cheap to run. Games load only when you open
+      them, so the arcade stays light until you pick something. It's early days — six cabinets are in
+      the workshop — and the floor will grow over time.
+    </p>
+
+    <h2>Original work</h2>
+    <p>
+      The games are original. Any outside fonts or assets are used under permissive licences and
+      credited in the project. If something here reminds you of a classic genre, that's the genre
+      doing its job — the names, art and code are our own.
+    </p>
+
+    <p>
+      Questions or found a bug? For now, head back to <a href={href('')}>the floor</a> and keep
+      playing — more ways to get in touch will come with launch.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .prose {
+    padding-top: var(--sp-6);
+    max-width: 720px;
+  }
+  .prose h2 {
+    margin-top: var(--sp-6);
+  }
+</style>

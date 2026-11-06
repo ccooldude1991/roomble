@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_NAME } from '../config/site';
+
+const updated = '7 November 2026';
+---
+
+<BaseLayout title="Privacy" description={`How ${SITE_NAME} handles your data.`}>
+  <div class="container prose">
+    <p class="draft" role="note">
+      <strong>Draft for review.</strong> This policy is an honest first draft written before ads or
+      leaderboards are switched on. Please review and have it checked before launch.
+    </p>
+
+    <h1>Privacy</h1>
+    <p class="prose__meta">Last updated: {updated}</p>
+
+    <h2>The short version</h2>
+    <p>
+      Right now {SITE_NAME} does not have accounts, does not run ads, and does not send your activity
+      to any server. A few small things are saved on your own device so the games remember your
+      progress. That's it.
+    </p>
+
+    <h2>What we store on your device</h2>
+    <p>
+      Using your browser's local storage (not cookies), {SITE_NAME} keeps, only on your device:
+    </p>
+    <ul>
+      <li>your best scores for each game;</li>
+      <li>your sound on/off preference;</li>
+      <li>your daily puzzle streak and which daily puzzles you've finished;</li>
+      <li>whether you've seen a game's how-to-play screen.</li>
+    </ul>
+    <p>
+      This data never leaves your device and is not shared. Clearing your browser's site data removes
+      it, which also resets your scores and streak.
+    </p>
+
+    <h2>Analytics</h2>
+    <p>
+      There is no analytics or tracking today. If a privacy-friendly analytics tool is added later, it
+      will be described here first, and it will not identify you personally.
+    </p>
+
+    <h2>Ads (planned, not yet active)</h2>
+    <p>
+      {SITE_NAME} plans to show ads in future to help cover costs. No ad code loads today. When ads
+      are turned on, they are expected to be served by Google AdSense (and possibly Google's H5 Games
+      Ads for between-game breaks). Those services may set cookies or use device identifiers to show
+      and measure ads.
+    </p>
+    <p>
+      For visitors in the EEA, the UK and Switzerland, a Google-certified consent banner will ask for
+      your choices before any ad code loads. This section will be rewritten with the exact details
+      when ads go live.
+    </p>
+
+    <h2>Leaderboards (planned, not yet active)</h2>
+    <p>
+      Global high-score tables are planned. When they launch, submitting a score would store a display
+      name you choose and the score itself on our backend. Playing without submitting will remain
+      possible. This section will be updated with specifics at that time.
+    </p>
+
+    <h2>Children</h2>
+    <p>
+      {SITE_NAME} is a general-audience arcade. It does not knowingly collect personal information
+      from anyone, including children.
+    </p>
+
+    <h2>Changes</h2>
+    <p>
+      As features like ads and leaderboards are added, this policy will be updated and the date above
+      changed. Significant changes will be noted on the site.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .prose {
+    padding-top: var(--sp-6);
+    max-width: 720px;
+  }
+  .prose h2 {
+    margin-top: var(--sp-6);
+  }
+  .prose__meta {
+    color: var(--ticket-dim);
+    font-size: var(--fs-0);
+  }
+  .prose ul {
+    color: var(--ticket-dim);
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+  .draft {
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--marquee);
+    border-radius: var(--r-button);
+    background: color-mix(in srgb, var(--marquee) 10%, transparent);
+    color: var(--ticket);
+  }
+</style>

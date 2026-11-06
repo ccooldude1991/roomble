@@ -1,0 +1,67 @@
+---
+/*
+ * Display ad slot with RESERVED dimensions so layout never shifts.
+ *  - provider 'none' in production: renders nothing.
+ *  - development: a subtle labelled placeholder at the reserved size.
+ *  - provider adsense/h5games (Phase 4): the reserved container the script fills.
+ *
+ * Placement rules (enforced by where this is used, see docs/CLAUDE ad rules):
+ * never over/inside the game canvas or touch controls, never during active play.
+ */
+import { FEATURES } from '../config/site';
+
+interface Props {
+  placement: 'homepage-between' | 'game-sidebar' | 'game-below';
+  /** Reserved size in px. */
+  width?: number;
+  height?: number;
+  class?: string;
+}
+
+const { placement, width = 300, height = 250, class: className } = Astro.props;
+
+const active = FEATURES.ads.enabled && FEATURES.ads.provider !== 'none';
+const showPlaceholder = import.meta.env.DEV && !active;
+const style = `--ad-w:${width}px;--ad-h:${height}px`;
+---
+
+{
+  active && (
+    <div
+      class:list={['adslot', className]}
+      style={style}
+      data-placement={placement}
+      aria-hidden="true"
+    />
+  )
+}
+{
+  showPlaceholder && (
+    <div class:list={['adslot adslot--dev', className]} style={style} aria-hidden="true">
+      <span>ad slot · {placement} · {width}×{height}</span>
+    </div>
+  )
+}
+<style>
+  .adslot {
+    width: var(--ad-w);
+    max-width: 100%;
+    min-height: var(--ad-h);
+    margin-inline: auto;
+  }
+  .adslot--dev {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed rgba(255, 244, 220, 0.18);
+    border-radius: var(--r-chip);
+    color: var(--ticket-dim);
+    font-size: var(--fs-0);
+    letter-spacing: 0.02em;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(255, 244, 220, 0.02) 0 8px,
+      transparent 8px 16px
+    );
+  }
+</style>

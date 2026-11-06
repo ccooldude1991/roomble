@@ -1,0 +1,120 @@
+---
+/*
+ * Arcade button: a chunky button with a thick coloured bottom edge that
+ * depresses on press (translateY + edge shrink), like a real cabinet button.
+ * Renders as <a> when given href, otherwise <button>.
+ */
+import Icon, { type IconName } from './Icon.astro';
+
+interface Props {
+  variant?: 'primary' | 'secondary' | 'icon';
+  href?: string;
+  type?: 'button' | 'submit';
+  size?: 'md' | 'lg';
+  /** For icon variant (and optional leading icon on others). */
+  icon?: IconName;
+  /** Accessible label; required for icon-only buttons. */
+  label?: string;
+  class?: string;
+  id?: string;
+  [key: string]: unknown;
+}
+
+const {
+  variant = 'primary',
+  href,
+  type = 'button',
+  size = 'md',
+  icon,
+  label,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = href ? 'a' : 'button';
+const classes = ['btn', `btn--${variant}`, `btn--${size}`, className].filter(Boolean).join(' ');
+const tagProps = href ? { href } : { type };
+const ariaLabel = variant === 'icon' ? label : undefined;
+---
+
+<Tag class={classes} aria-label={ariaLabel} {...tagProps} {...rest}>
+  {icon && <Icon name={icon} size={size === 'lg' ? 26 : 22} />}
+  {variant !== 'icon' && (
+    <span class="btn__text"><slot /></span>
+  )}
+</Tag>
+
+<style>
+  .btn {
+    --edge: var(--bezel-edge);
+    --bg: var(--bezel);
+    --fg: var(--ticket);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    color: var(--fg);
+    background: var(--bg);
+    border: none;
+    border-radius: var(--r-button);
+    padding: 0.7em 1.15em;
+    box-shadow: 0 4px 0 var(--edge);
+    transition:
+      transform var(--t-fast) var(--ease-out),
+      box-shadow var(--t-fast) var(--ease-out),
+      filter var(--t-fast) var(--ease-out);
+  }
+
+  .btn--lg {
+    font-size: var(--fs-2);
+    padding: 0.8em 1.4em;
+  }
+
+  .btn:hover {
+    filter: brightness(1.08);
+  }
+
+  .btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 var(--edge);
+  }
+
+  .btn--primary {
+    --bg: var(--marquee);
+    --edge: var(--marquee-edge);
+    --fg: var(--cabinet);
+  }
+
+  .btn--secondary {
+    --bg: transparent;
+    --edge: var(--phosphor-edge);
+    --fg: var(--phosphor);
+    box-shadow:
+      inset 0 0 0 2px var(--phosphor),
+      0 4px 0 var(--edge);
+  }
+  .btn--secondary:active {
+    box-shadow: inset 0 0 0 2px var(--phosphor);
+  }
+
+  .btn--icon {
+    --bg: var(--bezel);
+    --edge: var(--bezel-edge);
+    padding: 0.55em;
+    aspect-ratio: 1;
+  }
+
+  .btn__text {
+    line-height: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn:active {
+      transform: none;
+    }
+  }
+</style>

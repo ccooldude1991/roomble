@@ -1,0 +1,57 @@
+---
+/*
+ * In-house pixel SVG icons. Drawn on a 16x16 grid with crisp edges, inheriting
+ * currentColor. Icons are only used where they carry meaning (sound, pause,
+ * play, fullscreen, share, back, settings, close) — never as decoration.
+ */
+export type IconName =
+  | 'play'
+  | 'pause'
+  | 'sound-on'
+  | 'sound-off'
+  | 'fullscreen'
+  | 'share'
+  | 'back'
+  | 'settings'
+  | 'close';
+
+interface Props {
+  name: IconName;
+  /** Pixel size (square). */
+  size?: number;
+  /** Accessible label; when omitted the icon is decorative (aria-hidden). */
+  label?: string;
+  class?: string;
+}
+
+const { name, size = 24, label, class: className } = Astro.props;
+
+// Each icon is a set of rects on the 16x16 grid.
+const icons: Record<IconName, string> = {
+  play: `<rect x="4" y="3" width="2" height="10"/><rect x="6" y="4" width="2" height="8"/><rect x="8" y="5" width="2" height="6"/><rect x="10" y="6" width="2" height="4"/><rect x="12" y="7" width="2" height="2"/>`,
+  pause: `<rect x="4" y="3" width="3" height="10"/><rect x="9" y="3" width="3" height="10"/>`,
+  'sound-on': `<rect x="2" y="6" width="2" height="4"/><rect x="4" y="5" width="2" height="6"/><rect x="6" y="3" width="2" height="10"/><rect x="10" y="6" width="2" height="4"/><rect x="13" y="4" width="2" height="8"/>`,
+  'sound-off': `<rect x="2" y="6" width="2" height="4"/><rect x="4" y="5" width="2" height="6"/><rect x="6" y="3" width="2" height="10"/><rect x="10" y="5" width="2" height="2"/><rect x="12" y="7" width="2" height="2"/><rect x="14" y="9" width="2" height="2"/><rect x="14" y="5" width="2" height="2"/><rect x="10" y="9" width="2" height="2"/>`,
+  fullscreen: `<rect x="2" y="2" width="5" height="2"/><rect x="2" y="2" width="2" height="5"/><rect x="11" y="2" width="5" height="2"/><rect x="14" y="2" width="2" height="5"/><rect x="2" y="14" width="5" height="2"/><rect x="2" y="11" width="2" height="5"/><rect x="11" y="14" width="5" height="2"/><rect x="14" y="11" width="2" height="5"/>`,
+  share: `<rect x="11" y="2" width="3" height="3"/><rect x="11" y="11" width="3" height="3"/><rect x="2" y="6" width="3" height="3"/><rect x="6" y="5" width="2" height="2"/><rect x="8" y="4" width="2" height="2"/><rect x="6" y="9" width="2" height="2"/><rect x="8" y="10" width="2" height="2"/>`,
+  back: `<rect x="7" y="3" width="2" height="2"/><rect x="5" y="5" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="9" width="2" height="2"/><rect x="7" y="11" width="2" height="2"/><rect x="5" y="7" width="9" height="2"/>`,
+  settings: `<rect x="2" y="4" width="12" height="2"/><rect x="5" y="3" width="3" height="4"/><rect x="2" y="10" width="12" height="2"/><rect x="9" y="9" width="3" height="4"/>`,
+  close: `<rect x="3" y="3" width="2" height="2"/><rect x="5" y="5" width="2" height="2"/><rect x="7" y="7" width="2" height="2"/><rect x="9" y="9" width="2" height="2"/><rect x="11" y="11" width="2" height="2"/><rect x="11" y="3" width="2" height="2"/><rect x="9" y="5" width="2" height="2"/><rect x="5" y="9" width="2" height="2"/><rect x="3" y="11" width="2" height="2"/>`,
+};
+
+const a11y = label
+  ? { role: 'img' as const, 'aria-label': label }
+  : { 'aria-hidden': 'true' as const, focusable: 'false' as const };
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 16 16"
+  width={size}
+  height={size}
+  fill="currentColor"
+  shape-rendering="crispEdges"
+  class={className}
+  {...a11y}
+  set:html={icons[name]}
+/>

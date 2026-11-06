@@ -6,13 +6,23 @@ project itself do not need an entry.
 
 ## Fonts
 
-_None added yet. Phase 1 adds Bungee, Bungee Shade, Chakra Petch and VT323 (Google Fonts,
-OFL); they will be logged here with source URLs._
+Self-hosted via the `@fontsource` packages. All are SIL Open Font License (OFL).
+
+| Font | Role | Package | Source |
+|---|---|---|---|
+| Bungee | Headings, game titles, marquee | `@fontsource/bungee` | https://fonts.google.com/specimen/Bungee |
+| Bungee Shade | Logo treatment only | `@fontsource/bungee-shade` | https://fonts.google.com/specimen/Bungee+Shade |
+| Chakra Petch | UI and body | `@fontsource/chakra-petch` | https://fonts.google.com/specimen/Chakra+Petch |
+| VT323 | HUD / score numbers | `@fontsource/vt323` | https://fonts.google.com/specimen/VT323 |
 
 ## Sound
 
-_None added yet. Sound effects are authored as ZzFX code presets (ZzFX is MIT, a build-time
-dependency). Any CC0 music loops added later will be logged here._
+| Asset | Licence | Source |
+|---|---|---|
+| ZzFX (sound engine) | MIT | https://github.com/KilledByAPixel/ZzFX |
+
+Sound effects are authored in-house as ZzFX parameter presets (code, see
+`src/services/audio.ts`). Any CC0 music loops added later will be logged here.
 
 ## Word lists
 

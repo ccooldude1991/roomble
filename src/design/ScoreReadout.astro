@@ -1,0 +1,101 @@
+---
+/*
+ * Numeric readout in the CRT terminal face (VT323) with a phosphor glow. When
+ * `countUp` is set, the number animates up from zero the first time it scrolls
+ * into view (instant under reduced motion).
+ */
+type GlowColor = 'phosphor' | 'marquee' | 'joystick';
+
+interface Props {
+  value: number;
+  label?: string;
+  glow?: GlowColor;
+  size?: 'sm' | 'md' | 'lg';
+  countUp?: boolean;
+  class?: string;
+}
+
+const { value, label, glow = 'phosphor', size = 'md', countUp = false, class: className } =
+  Astro.props;
+const formatted = value.toLocaleString('en-US');
+---
+
+<span class:list={['score', `score--${size}`, className]} style={`--glow-c:var(--${glow})`}>
+  {label && <span class="score__label">{label}</span>}
+  <span
+    class="score__value"
+    data-countup={countUp ? '' : undefined}
+    data-value={value}
+    data-formatted={formatted}>{countUp ? '0' : formatted}</span>
+</span>
+
+<style>
+  .score {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1;
+  }
+  .score__label {
+    font-family: var(--font-ui);
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
+    letter-spacing: 0.02em;
+  }
+  .score__value {
+    font-family: var(--font-hud);
+    color: var(--glow-c);
+    text-shadow:
+      0 0 6px color-mix(in srgb, var(--glow-c) 55%, transparent),
+      0 0 16px color-mix(in srgb, var(--glow-c) 30%, transparent);
+    font-variant-numeric: tabular-nums;
+  }
+  .score--sm .score__value {
+    font-size: var(--fs-3);
+  }
+  .score--md .score__value {
+    font-size: var(--fs-5);
+  }
+  .score--lg .score__value {
+    font-size: var(--fs-7);
+  }
+</style>
+
+<script>
+  import { tween } from '../juice/tween';
+  import { prefersReducedMotion } from '../juice';
+
+  function run(el: HTMLElement) {
+    const target = Number(el.dataset.value ?? '0');
+    const formatted = el.dataset.formatted ?? target.toLocaleString('en-US');
+    if (prefersReducedMotion()) {
+      el.textContent = formatted;
+      return;
+    }
+    tween({
+      from: 0,
+      to: target,
+      duration: 900,
+      onUpdate: (v) => {
+        el.textContent = Math.round(v).toLocaleString('en-US');
+      },
+      onComplete: () => {
+        el.textContent = formatted;
+      },
+    });
+  }
+
+  const els = document.querySelectorAll<HTMLElement>('.score__value[data-countup]');
+  const io = new IntersectionObserver(
+    (entries, obs) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          run(e.target as HTMLElement);
+          obs.unobserve(e.target);
+        }
+      }
+    },
+    { threshold: 0.4 },
+  );
+  els.forEach((el) => io.observe(el));
+</script>

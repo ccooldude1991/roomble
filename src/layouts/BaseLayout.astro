@@ -1,14 +1,30 @@
 ---
 import { SITE_NAME, SITE_TAGLINE } from '../config/site';
+import Marquee from '../design/Marquee.astro';
+import SoundToggle from '../design/SoundToggle.astro';
+import Toast from '../design/Toast.astro';
+
+// Self-hosted fonts (OFL), only the weights we use.
+import '@fontsource/bungee/400.css';
+import '@fontsource/bungee-shade/400.css';
+import '@fontsource/chakra-petch/400.css';
+import '@fontsource/chakra-petch/500.css';
+import '@fontsource/chakra-petch/600.css';
+import '@fontsource/chakra-petch/700.css';
+import '@fontsource/vt323/400.css';
+import '../design/global.css';
 
 interface Props {
-  /** Page title; the site name is appended automatically. */
   title?: string;
   description?: string;
+  /** Hide the global header/footer (e.g. for a focused game page if ever needed). */
+  bare?: boolean;
 }
 
-const { title, description = SITE_TAGLINE } = Astro.props;
-const pageTitle = title ? `${title} — ${SITE_NAME}` : SITE_NAME;
+const { title, description = SITE_TAGLINE, bare = false } = Astro.props;
+const pageTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — ${SITE_TAGLINE}`;
+const base = import.meta.env.BASE_URL;
+const href = (p: string) => `${base}${p.replace(/^\//, '')}`;
 ---
 
 <!doctype html>
@@ -18,38 +34,107 @@ const pageTitle = title ? `${title} — ${SITE_NAME}` : SITE_NAME;
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
+    <meta name="theme-color" content="#1e1033" />
+    <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
   </head>
   <body>
-    <slot />
+    {
+      !bare && (
+        <header class="site-header safe">
+          <div class="container site-header__inner">
+            <a href={href('')} class="site-header__logo" aria-label={`${SITE_NAME} home`}>
+              <Marquee text={SITE_NAME} color="marquee" shade size="sm" as="span" />
+            </a>
+            <nav class="site-nav" aria-label="Primary">
+              <a href={href('daily')}>Daily</a>
+              <a href={href('about')}>About</a>
+              <SoundToggle />
+            </nav>
+          </div>
+        </header>
+      )
+    }
+
+    <main id="main" class="site-main">
+      <slot />
+    </main>
+
+    {
+      !bare && (
+        <footer class="site-footer safe">
+          <div class="container site-footer__inner">
+            <nav class="site-footer__nav" aria-label="Footer">
+              <a href={href('about')}>About</a>
+              <a href={href('privacy')}>Privacy</a>
+              <a href={href('terms')}>Terms</a>
+            </nav>
+            <p class="site-footer__copy">
+              {SITE_NAME} — original browser games. Made to be played.
+            </p>
+          </div>
+        </footer>
+      )
+    }
+
+    <Toast />
+
+    <script>
+      import { installAudioUnlock } from '../services/audio';
+      installAudioUnlock();
+    </script>
+
+    <style>
+      .site-main {
+        min-height: 60vh;
+      }
+
+      .site-header__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-4);
+        padding-block: var(--sp-4);
+      }
+      .site-header__logo {
+        text-decoration: none;
+      }
+
+      .site-nav {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-4);
+      }
+      .site-nav a {
+        color: var(--ticket);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .site-nav a:hover {
+        color: var(--phosphor);
+      }
+
+      .site-footer {
+        margin-top: var(--sp-8);
+        border-top: var(--panel-border);
+        background: var(--bezel);
+      }
+      .site-footer__inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-3);
+        padding-block: var(--sp-5);
+      }
+      .site-footer__nav {
+        display: flex;
+        gap: var(--sp-4);
+      }
+      .site-footer__copy {
+        margin: 0;
+        color: var(--ticket-dim);
+        font-size: var(--fs-0);
+      }
+    </style>
   </body>
 </html>
-
-<style is:global>
-  :root {
-    /* Placeholder tokens only. The real design system lands in Phase 1
-       (src/design/tokens.css per docs/DESIGN.md). */
-    --cabinet: #1e1033;
-    --ticket: #fff4dc;
-    --phosphor: #4df0d0;
-    color-scheme: dark;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  html,
-  body {
-    margin: 0;
-    min-height: 100%;
-  }
-
-  body {
-    background: var(--cabinet);
-    color: var(--ticket);
-    font-family: ui-monospace, monospace;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-      env(safe-area-inset-left);
-  }
-</style>

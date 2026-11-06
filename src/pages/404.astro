@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArcadeButton from '../design/ArcadeButton.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Out of order" description="This page couldn't be found.">
+  <div class="container notfound">
+    <p class="notfound__code">404</p>
+    <h1 class="notfound__title">Out of order</h1>
+    <p class="notfound__text">This cabinet's out of order. Head back to the floor.</p>
+    <ArcadeButton variant="primary" size="lg" href={base}>Back to the floor</ArcadeButton>
+  </div>
+</BaseLayout>
+
+<style>
+  .notfound {
+    padding-block: var(--sp-8);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+  .notfound__code {
+    margin: 0;
+    font-family: var(--font-hud);
+    font-size: var(--fs-7);
+    color: var(--joystick);
+    text-shadow: var(--glow-joystick);
+    line-height: 1;
+  }
+  .notfound__title {
+    margin: 0;
+  }
+  .notfound__text {
+    color: var(--ticket-dim);
+    font-size: var(--fs-2);
+  }
+</style>

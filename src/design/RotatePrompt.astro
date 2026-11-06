@@ -1,0 +1,79 @@
+---
+/*
+ * Friendly rotate prompt shown by the game host when a game needs an orientation
+ * the device isn't in. Hidden by default; the shell toggles [data-show].
+ */
+interface Props {
+  /** The orientation the game wants. */
+  want?: 'portrait' | 'landscape';
+  id?: string;
+}
+const { want = 'landscape', id } = Astro.props;
+const message =
+  want === 'landscape' ? 'Turn your phone sideways to play.' : 'Hold your phone upright to play.';
+---
+
+<div class="rotate" data-rotate role="status" aria-live="polite" id={id} data-want={want}>
+  <svg
+    class="rotate__icon"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 16 16"
+    width="48"
+    height="48"
+    fill="currentColor"
+    shape-rendering="crispEdges"
+    aria-hidden="true"
+  >
+    <rect x="3" y="2" width="7" height="12" />
+    <rect x="4" y="4" width="5" height="8" fill="#050208" />
+    <rect x="12" y="7" width="2" height="2" />
+    <rect x="13" y="9" width="2" height="2" />
+    <rect x="11" y="9" width="2" height="2" />
+  </svg>
+  <p class="rotate__text">{message}</p>
+</div>
+
+<style>
+  .rotate {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    text-align: center;
+    background: var(--cabinet);
+    color: var(--phosphor);
+  }
+  .rotate[data-show] {
+    display: flex;
+  }
+  .rotate__icon {
+    color: var(--phosphor);
+    filter: drop-shadow(var(--glow-phosphor));
+    animation: tip 1.8s var(--ease-in-out) infinite;
+  }
+  .rotate__text {
+    margin: 0;
+    color: var(--ticket);
+    font-size: var(--fs-2);
+  }
+  @keyframes tip {
+    0%,
+    60%,
+    100% {
+      transform: rotate(0deg);
+    }
+    80% {
+      transform: rotate(-90deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rotate__icon {
+      animation: none;
+    }
+  }
+</style>

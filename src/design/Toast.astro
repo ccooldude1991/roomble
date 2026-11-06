@@ -1,0 +1,57 @@
+---
+/*
+ * Toast host. Render once near the end of a layout. The root element is also
+ * created on demand by src/shell/toast.ts, so this is mostly for styling and to
+ * guarantee a live region exists.
+ */
+---
+
+<div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+<style is:global>
+  .toast-root {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--sp-5) + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    z-index: var(--z-toast);
+    pointer-events: none;
+    width: max-content;
+    max-width: 90vw;
+  }
+  .toast {
+    pointer-events: auto;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--bezel);
+    color: var(--ticket);
+    border-radius: var(--r-button);
+    border: var(--panel-border);
+    font-size: var(--fs-1);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity var(--t-base) var(--ease-out),
+      transform var(--t-base) var(--ease-out);
+  }
+  .toast.is-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .toast--good {
+    color: var(--phosphor);
+  }
+  .toast--warn {
+    color: var(--marquee);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toast {
+      transition: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

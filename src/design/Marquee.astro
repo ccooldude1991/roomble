@@ -1,0 +1,134 @@
+---
+/*
+ * Illuminated marquee: a title in the arcade signage face, framed by rows of
+ * bulbs that chase slowly. The chasing bulbs are the only ambient animation on
+ * site chrome; they stop under reduced motion.
+ */
+type MarqueeColor = 'marquee' | 'phosphor' | 'joystick' | 'ticket';
+
+interface Props {
+  text: string;
+  color?: MarqueeColor;
+  /** Use Bungee Shade (logo treatment). */
+  shade?: boolean;
+  /** Heading level or wrapper tag. */
+  as?: 'h1' | 'h2' | 'div' | 'span';
+  href?: string;
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const {
+  text,
+  color = 'marquee',
+  shade = false,
+  as = 'div',
+  href,
+  size = 'md',
+  class: className,
+} = Astro.props;
+
+const colorVar = `var(--${color})`;
+const Label = href ? 'a' : as;
+const labelProps = href ? { href } : {};
+---
+
+<div
+  class:list={['marquee', `marquee--${size}`, { 'marquee--shade': shade }, className]}
+  style={`--mq:${colorVar}`}
+>
+  <span class="marquee__bulbs" aria-hidden="true"></span>
+  <Label class="marquee__label" {...labelProps}>{text}</Label>
+  <span class="marquee__bulbs" aria-hidden="true"></span>
+</div>
+
+<style>
+  .marquee {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--bezel);
+    border-radius: var(--r-cabinet);
+    border: var(--panel-border);
+  }
+
+  .marquee__label {
+    font-family: var(--font-display);
+    color: var(--mq);
+    text-align: center;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-shadow:
+      0 0 8px color-mix(in srgb, var(--mq) 60%, transparent),
+      0 0 20px color-mix(in srgb, var(--mq) 35%, transparent);
+    text-decoration: none;
+    font-size: var(--fs-4);
+  }
+  .marquee--sm .marquee__label {
+    font-size: var(--fs-2);
+  }
+  .marquee--lg .marquee__label {
+    font-size: clamp(var(--fs-5), 8vw, var(--fs-7));
+  }
+  .marquee--shade .marquee__label {
+    font-family: var(--font-display-shade);
+  }
+  a.marquee__label:hover {
+    filter: brightness(1.12);
+  }
+
+  /* Bulb rows: fixed dim dots, with a bright band that travels across. */
+  .marquee__bulbs {
+    position: relative;
+    display: block;
+    height: 8px;
+    background-image: radial-gradient(circle, var(--mq) 0 2px, transparent 2.6px);
+    background-size: 15px 100%;
+    background-position: center;
+    opacity: 0.4;
+    overflow: hidden;
+  }
+  .marquee__bulbs::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, var(--mq) 0 2px, transparent 2.6px);
+    background-size: 15px 100%;
+    background-position: center;
+    filter: drop-shadow(0 0 4px var(--mq)) brightness(1.6);
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      #000 8%,
+      transparent 18%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, transparent 18%, transparent 100%);
+    -webkit-mask-size: 220px 100%;
+    mask-size: 220px 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: chase 2.6s linear infinite;
+  }
+
+  @keyframes chase {
+    from {
+      -webkit-mask-position: -220px 0;
+      mask-position: -220px 0;
+    }
+    to {
+      -webkit-mask-position: 100% 0;
+      mask-position: 100% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee__bulbs::after {
+      display: none;
+    }
+    .marquee__bulbs {
+      opacity: 0.55;
+    }
+  }
+</style>

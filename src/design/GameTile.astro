@@ -1,0 +1,159 @@
+---
+/*
+ * A game cabinet on the floor. Not a uniform card: a cabinet silhouette with a
+ * coloured marquee, a CRT screen (preview loop later; placeholder for now) and a
+ * control-panel strip showing category and best score. On hover/focus the screen
+ * brightens and the marquee lights up — no lift, no shadow change.
+ */
+import Marquee from './Marquee.astro';
+import CrtScreen from './CrtScreen.astro';
+import ScoreReadout from './ScoreReadout.astro';
+
+type MarqueeColor = 'marquee' | 'phosphor' | 'joystick' | 'ticket';
+
+interface Props {
+  slug: string;
+  title: string;
+  tagline: string;
+  category: string;
+  color?: MarqueeColor;
+  comingSoon?: boolean;
+  best?: number | null;
+  featured?: boolean;
+  class?: string;
+}
+
+const {
+  slug,
+  title,
+  tagline,
+  category,
+  color = 'marquee',
+  comingSoon = false,
+  best = null,
+  featured = false,
+  class: className,
+} = Astro.props;
+
+const href = `${import.meta.env.BASE_URL}games/${slug}`;
+---
+
+<a
+  href={href}
+  class:list={['tile', { 'tile--featured': featured }, className]}
+  aria-label={`${title} — ${category}${comingSoon ? ', coming soon' : ''}`}
+>
+  <div class="tile__marquee">
+    <Marquee text={title} color={color} size="sm" as="div" />
+  </div>
+
+  <CrtScreen aspect={featured ? '16 / 10' : '4 / 3'} class="tile__screen">
+    <div class="tile__preview">
+      <p class="tile__tagline">{tagline}</p>
+      {comingSoon && <span class="tile__soon">Coming soon</span>}
+    </div>
+  </CrtScreen>
+
+  <div class="tile__panel">
+    <span class="tile__chip">{category}</span>
+    {
+      best != null ? (
+        <ScoreReadout value={best} label="best" glow="phosphor" size="sm" />
+      ) : (
+        <span class="tile__meta">{comingSoon ? 'In the workshop' : 'No score yet'}</span>
+      )
+    }
+  </div>
+</a>
+
+<style>
+  .tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    background: var(--bezel);
+    border: var(--panel-border);
+    border-radius: var(--r-cabinet);
+    text-decoration: none;
+    color: var(--ticket);
+    transition: filter var(--t-base) var(--ease-out);
+  }
+  .tile:hover,
+  .tile:focus-visible {
+    /* Brighten the screen, don't lift the card. */
+    filter: none;
+  }
+  .tile :global(.crt) {
+    transition:
+      filter var(--t-base) var(--ease-out),
+      box-shadow var(--t-base) var(--ease-out);
+  }
+  .tile:hover :global(.crt),
+  .tile:focus-visible :global(.crt) {
+    filter: brightness(1.25) saturate(1.1);
+  }
+  .tile:hover :global(.marquee__bulbs),
+  .tile:focus-visible :global(.marquee__bulbs) {
+    opacity: 0.75;
+  }
+
+  .tile__marquee :global(.marquee) {
+    width: 100%;
+  }
+
+  .tile__preview {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    padding: var(--sp-4);
+    text-align: center;
+    background:
+      radial-gradient(80% 70% at 50% 50%, rgba(77, 240, 208, 0.08), transparent 70%),
+      repeating-linear-gradient(135deg, rgba(255, 244, 220, 0.03) 0 6px, transparent 6px 12px);
+  }
+  .tile__tagline {
+    margin: 0;
+    max-width: 28ch;
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
+    line-height: 1.4;
+  }
+  .tile__soon {
+    font-family: var(--font-hud);
+    font-size: var(--fs-2);
+    color: var(--marquee);
+    text-shadow: var(--glow-marquee);
+    letter-spacing: 0.04em;
+  }
+
+  .tile__panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    padding-inline: var(--sp-1);
+  }
+  .tile__chip {
+    font-size: var(--fs-0);
+    text-transform: lowercase;
+    color: var(--cabinet);
+    background: var(--phosphor);
+    padding: 2px 8px;
+    border-radius: var(--r-chip);
+    font-weight: 600;
+  }
+  .tile__meta {
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
+  }
+
+  .tile--featured .tile__marquee :global(.marquee__label) {
+    font-size: var(--fs-3);
+  }
+</style>

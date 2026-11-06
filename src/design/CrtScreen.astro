@@ -1,0 +1,117 @@
+---
+/*
+ * CRT screen: the shared glass treatment used for every game screen and preview.
+ * Scanlines + vignette + inner glow + gently curved glass. Optional 400ms
+ * power-on. CRT treatment appears ONLY here, never on site chrome.
+ *
+ * Put the screen content (canvas, preview video, placeholder) in the default slot.
+ */
+interface Props {
+  /** CSS aspect-ratio, e.g. "16 / 9", "9 / 16", "1 / 1". */
+  aspect?: string;
+  /** Play the power-on flash on load. */
+  powerOn?: boolean;
+  class?: string;
+  id?: string;
+}
+
+const { aspect = '16 / 9', powerOn = false, class: className, id } = Astro.props;
+---
+
+<div
+  class:list={['crt', { 'crt--power-on': powerOn }, className]}
+  style={`--crt-aspect:${aspect}`}
+  id={id}
+>
+  <div class="crt__content"><slot /></div>
+  <div class="crt__scanlines" aria-hidden="true"></div>
+  <div class="crt__glass" aria-hidden="true"></div>
+</div>
+
+<style>
+  .crt {
+    position: relative;
+    aspect-ratio: var(--crt-aspect);
+    width: 100%;
+    background: #050208;
+    border-radius: 12px;
+    overflow: hidden;
+    /* The surrounding bezel is drawn by Cabinet; here we only do the glass. */
+    box-shadow:
+      inset 0 0 0 2px rgba(0, 0, 0, 0.6),
+      inset 0 0 40px rgba(0, 0, 0, 0.8);
+  }
+
+  .crt__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Suggest curved glass: scale up a hair and round generously. */
+    transform: scale(1.015);
+  }
+  .crt__content > :global(*) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .crt__scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0.28) 1px,
+      rgba(0, 0, 0, 0.28) 2px
+    );
+    mix-blend-mode: multiply;
+    opacity: 0.7;
+  }
+
+  .crt__glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Vignette + soft inner phosphor glow. */
+    background:
+      radial-gradient(130% 120% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%),
+      radial-gradient(90% 80% at 50% 40%, rgba(77, 240, 208, 0.06), transparent 70%);
+    border-radius: inherit;
+  }
+
+  /* 400ms power-on: a bright line expands to full screen with a phosphor flash. */
+  .crt--power-on .crt__content {
+    animation: power-on 400ms var(--ease-out) 1;
+    transform-origin: center;
+  }
+  @keyframes power-on {
+    0% {
+      transform: scaleY(0.004) scaleX(1.3);
+      filter: brightness(4) saturate(0.4);
+      opacity: 0;
+    }
+    35% {
+      transform: scaleY(0.02) scaleX(1);
+      filter: brightness(3);
+      opacity: 1;
+    }
+    70% {
+      transform: scaleY(1) scaleX(1);
+      filter: brightness(1.8);
+    }
+    100% {
+      transform: scaleY(1) scale(1.015);
+      filter: brightness(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .crt--power-on .crt__content {
+      animation: none;
+    }
+  }
+</style>

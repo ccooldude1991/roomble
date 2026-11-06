@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_NAME } from '../config/site';
+
+const updated = '7 November 2026';
+---
+
+<BaseLayout title="Terms" description={`The terms for using ${SITE_NAME}.`}>
+  <div class="container prose">
+    <p class="draft" role="note">
+      <strong>Draft for review.</strong> These terms are a plain first draft. Please review and have
+      them checked before launch, including the governing-law section.
+    </p>
+
+    <h1>Terms of use</h1>
+    <p class="prose__meta">Last updated: {updated}</p>
+
+    <h2>Using the arcade</h2>
+    <p>
+      {SITE_NAME} is free to play for personal entertainment. By using the site you agree to these
+      terms. If you don't agree, please don't use the site.
+    </p>
+
+    <h2>Our content</h2>
+    <p>
+      The games, their names, art, sounds and code are original and owned by {SITE_NAME} unless noted
+      otherwise. Any third-party fonts or assets are used under their own permissive licences. Please
+      don't copy, redistribute or republish the games or their assets without permission.
+    </p>
+
+    <h2>Your saved data</h2>
+    <p>
+      Scores, preferences and streaks are stored in your browser on your device. They can be lost if
+      you clear your browser data, use a different device, or switch browsers. {SITE_NAME} can't
+      recover local data.
+    </p>
+
+    <h2>Fair play (when leaderboards arrive)</h2>
+    <p>
+      Global leaderboards are planned. When they launch, you'll be asked to pick a display name.
+      Choose something appropriate — names that are offensive or impersonate others may be removed.
+      Don't tamper with scores or try to submit results you didn't earn; suspicious entries may be
+      rejected or removed.
+    </p>
+
+    <h2>Ads (when enabled)</h2>
+    <p>
+      {SITE_NAME} may show ads in future. Ads will never cover the game screen or touch controls
+      during play. See the <a href={`${import.meta.env.BASE_URL}privacy`}>privacy page</a> for how ad
+      providers handle data.
+    </p>
+
+    <h2>No warranty</h2>
+    <p>
+      The site is provided "as is", without warranties of any kind. It may have bugs, change, or be
+      unavailable at times. To the extent allowed by law, {SITE_NAME} isn't liable for any loss
+      arising from using the site.
+    </p>
+
+    <h2>Changes</h2>
+    <p>
+      These terms may change as the site grows. The date above shows the latest version.
+    </p>
+
+    <h2>Governing law</h2>
+    <p>
+      To be confirmed before launch (expected: Singapore). This placeholder is part of the draft.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .prose {
+    padding-top: var(--sp-6);
+    max-width: 720px;
+  }
+  .prose h2 {
+    margin-top: var(--sp-6);
+  }
+  .prose__meta {
+    color: var(--ticket-dim);
+    font-size: var(--fs-0);
+  }
+  .draft {
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--marquee);
+    border-radius: var(--r-button);
+    background: color-mix(in srgb, var(--marquee) 10%, transparent);
+    color: var(--ticket);
+  }
+</style>

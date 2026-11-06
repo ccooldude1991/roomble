@@ -2,63 +2,78 @@
 
 ## Status
 
-**Phase 0 complete.** The project is scaffolded, builds cleanly, tests pass, and a
-GitHub Actions workflow is ready to deploy to GitHub Pages on push to `main`. The site
-currently shows a minimal placeholder homepage. Not started: Phase 1 (design system and
-site shell).
+**Phase 1 complete.** The arcade-cabinet design system and the full site shell are built: design
+tokens, fonts, the component library, all pages, the game host, the services, the juice utilities,
+and a hidden `cabinet-test` game that verifies the shell end to end. Build, unit tests and Playwright
+smoke tests (all four viewports) are green, with no console errors. Not started: Phase 2 (the first
+two real games, Stackdown and Rooftop Rush).
 
 ## Done
 
-- Astro (static output) + TypeScript strict project, set up manually (no interactive
-  scaffold), extending `astro/tsconfigs/strict`.
-- Folder structure from CLAUDE.md created (`src/config`, `src/design`, `src/layouts`,
-  `src/pages`, `src/shell`, `src/services`, `src/juice`, `src/games/*`, `specs`, `docs`,
-  `scripts`, `tests`, `public/previews`). Empty dirs hold a `.gitkeep`.
-- `src/config/site.ts`: `SITE_NAME` ("Roomble"), placeholder `SITE_TAGLINE`, `SITE_URL`,
-  `DAILY_TIMEZONE` ("Asia/Singapore"), and `FEATURES` flags — ads `{ enabled: false,
-  provider: 'none' }`, `leaderboards: false`, `analytics: false`.
-- `src/games/types.ts`: the full game contract (`GameModule`, `GameContext`, `GameMeta`,
-  `GameEvent`, `GameInstance`) with minimal service interfaces so it type-checks now;
-  real services arrive in Phase 1.
-- Vitest configured (unit tests in `src/**/*.test.ts` and `tests/unit`), with a config
-  smoke test.
-- Playwright configured with four viewport projects (375x667, 390x844, 768x1024,
-  1440x900) and a homepage smoke test that checks the site name and asserts no console
-  errors. It builds and previews the static site automatically.
-- GitHub Actions workflow `.github/workflows/deploy.yml`: builds and deploys to GitHub
-  Pages on push to `main`. Base path and canonical URL are resolved at build time from the
-  repo (project page vs. user/org page vs. custom domain via `public/CNAME`) and passed to
-  Astro through `BASE_PATH` / `SITE_URL` env vars — nothing hardcoded.
-- Minimal placeholder homepage and `BaseLayout` that read the name/tagline from config.
-- Placeholder `favicon.svg` (cabinet motif).
+### Phase 0 (earlier)
+- Astro (static) + TypeScript strict, folder structure, `src/config/site.ts`, Vitest + Playwright
+  (four viewports), GitHub Pages deploy workflow with env-driven base path, placeholder homepage.
+  Live at https://ccooldude1991.github.io/roomble/.
+
+### Phase 1
+- **Design system** — `src/design/tokens.css` (colour, 1.25 type scale, radii, spacing, glow,
+  motion), `src/design/global.css` (reset, base type, the arcade **carpet** pattern drawn in SVG,
+  focus styles, reduced-motion handling, the `is-playing` scroll lock).
+- **Fonts** — self-hosted via `@fontsource` (OFL): Bungee, Bungee Shade (logo), Chakra Petch
+  (UI/body, weights 400/500/600/700), VT323 (HUD). Only the weights used are imported.
+- **Pixel icon set** — in-house `Icon.astro` (play, pause, sound-on/off, fullscreen, share, back,
+  settings, close) on a 16×16 grid, currentColor, crisp edges. No third-party icon set.
+- **Components** — `Marquee` (chasing bulbs), `CrtScreen` (scanlines/vignette/glow/power-on),
+  `Cabinet`, `ArcadeButton` (primary/secondary/icon, depressing edge), `ScoreReadout` (VT323
+  count-up), `GameTile`, `AdSlot`, `SoundToggle`, `RotatePrompt`, `Modal` (native `<dialog>`),
+  `Toast`.
+- **Pages** — homepage (attract hero + daily panel + "the floor" with per-game marquee colours),
+  `/games/[slug]` template (cabinet + how-to + controls + ads + "more cabinets"), `/daily`,
+  `/about`, `/privacy`, `/terms` (both marked clearly as drafts for review), and a 404
+  ("This cabinet's out of order…"). Copy written in the DESIGN.md voice.
+- **Game host** — `src/shell/host.ts` + `src/shell/GameHost.astro`: lazy-loads the GameModule on
+  Play, builds the GameContext, pauses on blur/hidden (auto-resumes on return), fullscreen, rotate
+  prompt, scroll/zoom lock during play, best-score persistence, pause menu, game-over flow, and
+  restart via remount. `src/shell/toast.ts` for notifications.
+- **Services** — `audio` (ZzFX, lazy context unlocked on first gesture, mute persists), `save`
+  (namespaced, versioned, safe fallbacks), `input` (keyboard/gesture/gamepad), `ads` (none/adsense/
+  h5games with the AdSlot and interstitial frequency-cap rules; provider `none` active), `leaderboard`
+  (no-op), `analytics` (no-op).
+- **Juice** — `src/juice`: easings, rAF `tween`, `Shaker`, `Hitstop`, `Particles`, `Popups`, all
+  reduced-motion aware.
+- **cabinet-test** — hidden game (not on the public floor) implementing the full GameModule contract
+  (mount/pause/resume/destroy + attract) to verify the shell.
 
 ## Decisions
 
-- **Scaffolded by hand** rather than `npm create astro` to avoid the interactive wizard and
-  keep the tree minimal and exactly as CLAUDE.md specifies.
-- **Pinned versions**: astro 7.4.7, @astrojs/check 0.9.12, vitest 5.1.0,
-  @playwright/test 1.65.0, typescript 6.0.3. TypeScript is 6.x (not the latest 7.x) because
-  `@astrojs/check` peer-requires TypeScript `^5 || ^6`. Phaser is not added yet (Phase 2+);
-  it will be pinned exactly then.
-- **Base path strategy**: driven by env at build time. Add a custom domain by committing
-  `public/CNAME`; the workflow then serves from `/` automatically. No code change needed to
-  switch between a `github.io/<repo>` URL and a custom domain.
-- **`build` runs `astro check`** first so type errors fail the build (and CI).
-- **CI Node version is 24** (satisfies both Astro's `>=22.23.4` and Vitest's engine range).
-- The game contract's service interfaces live in `src/games/types.ts` for now; Phase 1 may
-  move them next to their implementations in `src/services`.
+- **Shell owns the common screens.** The pause menu, game-over overlay, best score and restart live
+  in the shell so every game gets them free; games emit `start`/`gameover` and may draw their own
+  in-game title/how-to. Restart is a destroy + remount (no page reload).
+- **Game-page UI is one component** (`GameHost.astro`) wired by a client script that pulls the lazy
+  loader from the registry by slug — so only the opened game's bundle loads.
+- **Registry** (`src/games/registry.ts`) is the single source for the floor and game pages. The six
+  real games are `coming-soon` placeholders with full meta (titles, taglines, descriptions, how-to,
+  controls, marquee colour) taken from `specs/`; `cabinet-test` is the only playable, hidden entry.
+- **Audio context is created lazily** on the first user gesture (not at import), avoiding the browser
+  autoplay-warning and keeping the "no console warnings" bar.
+- **Fonts self-hosted via @fontsource** rather than Google Fonts links — faster, no third-party
+  request (cleaner for the future ads/consent story), and still OFL. Logged in CREDITS.md.
+- **New dependencies**: `@fontsource/{bungee,bungee-shade,chakra-petch,vt323}` (fonts, OFL),
+  `zzfx` (MIT, sound), `@types/node` (dev). All justified above.
 
 ## Known issues
 
-- None. Placeholder homepage is intentionally minimal; the real design system and all
-  pages come in Phase 1.
-- `SITE_URL` in `src/config/site.ts` reads `import.meta.env.SITE_URL` with a localhost
-  fallback; the authoritative canonical URL for build-time use is Astro's `site` setting
-  (set from the same env var in the workflow).
+- The six floor games are placeholders; their `/games/<slug>` pages show a "coming soon" cabinet.
+- Preview clips don't exist yet (Phase 3), so tiles and the hero show a placeholder screen with the
+  game's tagline instead of live gameplay.
+- `/privacy` and `/terms` are honest **drafts** and carry a visible "Draft for review" banner — the
+  owner should have them reviewed before launch; the terms governing-law line is a placeholder.
+- Daily streak / puzzle number on the homepage and `/daily` are static zeros until Rungs ships
+  (Phase 3).
 
 ## Next
 
-- **Phase 1**: design tokens and fonts (`src/design/tokens.css`), the component library,
-  all pages (home, `/games/[slug]`, `/daily`, `/about`, `/privacy`, `/terms`, 404), the
-  game host in `src/shell`, the services, juice utilities, and a `cabinet-test` game to
-  verify the shell. See `docs/PHASES.md`.
+- **Phase 2a**: build Stackdown per `specs/01-stackdown.md` (Phaser 3), meeting the CLAUDE.md quality
+  checklist and the spec's "Done when"; add it to the floor.
+- **Phase 2b**: build Rooftop Rush per `specs/02-rooftop-rush.md`, reusing the shared juice/services.
+- Then the Phase 2 checkpoint (play both, send feedback).

@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GameHost from '../../shell/GameHost.astro';
+import GameTile from '../../design/GameTile.astro';
+import AdSlot from '../../design/AdSlot.astro';
+import { games, floorGames, getEntry } from '../../games/registry';
+
+export function getStaticPaths() {
+  return games.map((g) => ({ params: { slug: g.meta.slug } }));
+}
+
+const { slug } = Astro.params;
+const entry = getEntry(slug!)!;
+const { meta, color } = entry;
+const playable = entry.status === 'playable';
+
+const more = floorGames.filter((g) => g.meta.slug !== meta.slug).slice(0, 3);
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+  <div class="game container">
+    <div class="game__stage">
+      <GameHost meta={meta} color={color} playable={playable} />
+    </div>
+
+    <aside class="game__aside">
+      <section class="panel">
+        <h2 class="panel__title">How to play</h2>
+        <ol class="panel__steps">
+          {meta.howToPlay.map((step) => <li>{step}</li>)}
+        </ol>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel__title">Controls</h2>
+        <h3 class="panel__sub">Keyboard</h3>
+        <ul class="panel__list">
+          {meta.controls.desktop.map((c) => <li>{c}</li>)}
+        </ul>
+        <h3 class="panel__sub">Touch</h3>
+        <ul class="panel__list">
+          {meta.controls.mobile.map((c) => <li>{c}</li>)}
+        </ul>
+      </section>
+
+      <div class="game__ad game__ad--side">
+        <AdSlot placement="game-sidebar" width={300} height={250} />
+      </div>
+    </aside>
+  </div>
+
+  <section class="game__about container">
+    <h2>About {meta.title}</h2>
+    <p>{meta.description}</p>
+  </section>
+
+  <div class="game__ad game__ad--below container">
+    <AdSlot placement="game-below" width={320} height={100} />
+  </div>
+
+  {
+    more.length > 0 && (
+      <section class="game__more container" aria-labelledby="more-heading">
+        <h2 id="more-heading">More cabinets</h2>
+        <div class="game__more-grid">
+          {more.map((g) => (
+            <GameTile
+              slug={g.meta.slug}
+              title={g.meta.title}
+              tagline={g.meta.tagline}
+              category={g.meta.category}
+              color={g.color}
+              comingSoon={g.status === 'coming-soon'}
+            />
+          ))}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .game {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+    padding-top: var(--sp-5);
+  }
+  @media (min-width: 960px) {
+    .game {
+      grid-template-columns: minmax(0, 1fr) 320px;
+      align-items: start;
+    }
+  }
+
+  .game__aside {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+  }
+  .panel {
+    padding: var(--sp-4);
+    background: var(--bezel);
+    border: var(--panel-border);
+    border-radius: var(--r-cabinet);
+  }
+  .panel__title {
+    margin: 0 0 var(--sp-3);
+    font-size: var(--fs-2);
+  }
+  .panel__sub {
+    margin: var(--sp-3) 0 var(--sp-1);
+    font-family: var(--font-ui);
+    font-size: var(--fs-0);
+    color: var(--phosphor);
+    letter-spacing: 0.02em;
+  }
+  .panel__steps,
+  .panel__list {
+    margin: 0;
+    padding-left: 1.3em;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    color: var(--ticket-dim);
+  }
+
+  /* The sidebar ad shows on wide screens; the below-the-cabinet ad on narrow. */
+  .game__ad--side {
+    display: none;
+  }
+  @media (min-width: 960px) {
+    .game__ad--side {
+      display: block;
+    }
+    .game__ad--below {
+      display: none;
+    }
+  }
+
+  .game__about {
+    padding-top: var(--sp-6);
+  }
+  .game__more {
+    padding-top: var(--sp-6);
+  }
+  .game__more-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: var(--sp-4);
+  }
+</style>

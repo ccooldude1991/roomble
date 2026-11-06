@@ -1,0 +1,80 @@
+---
+/*
+ * A full cabinet: marquee on top, CRT screen in the middle, control-panel strip
+ * at the bottom. The site's core building block for the hero and game page.
+ *
+ * Slots: default = screen content; "controls" = control-panel contents.
+ */
+import Marquee from './Marquee.astro';
+import CrtScreen from './CrtScreen.astro';
+
+type MarqueeColor = 'marquee' | 'phosphor' | 'joystick' | 'ticket';
+
+interface Props {
+  title: string;
+  color?: MarqueeColor;
+  href?: string;
+  aspect?: string;
+  powerOn?: boolean;
+  /** Marquee heading level. */
+  as?: 'h1' | 'h2' | 'div';
+  class?: string;
+}
+
+const {
+  title,
+  color = 'marquee',
+  href,
+  aspect = '16 / 9',
+  powerOn = false,
+  as = 'div',
+  class: className,
+} = Astro.props;
+
+const hasControls = Astro.slots.has('controls');
+---
+
+<div class:list={['cabinet', className]}>
+  <div class="cabinet__marquee">
+    <Marquee text={title} color={color} href={href} as={as} size="md" />
+  </div>
+  <div class="cabinet__screen">
+    <CrtScreen aspect={aspect} powerOn={powerOn}><slot /></CrtScreen>
+  </div>
+  {
+    hasControls && (
+      <div class="cabinet__panel">
+        <slot name="controls" />
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .cabinet {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-4);
+    background: var(--bezel);
+    border: var(--panel-border);
+    border-radius: var(--r-cabinet);
+  }
+
+  .cabinet__marquee {
+    display: flex;
+    justify-content: center;
+  }
+  .cabinet__marquee :global(.marquee) {
+    width: 100%;
+  }
+
+  .cabinet__panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-2) var(--sp-1);
+    flex-wrap: wrap;
+  }
+</style>

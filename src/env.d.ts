@@ -10,3 +10,15 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// ZzFX ships no type declarations. We only use ZZFX.play(...params) and the
+// volume / audioContext fields.
+declare module 'zzfx' {
+  export const ZZFX: {
+    volume: number;
+    sampleRate: number;
+    audioContext: AudioContext;
+    play(...params: number[]): AudioBufferSourceNode;
+  };
+  export function zzfx(...params: number[]): AudioBufferSourceNode;
+}

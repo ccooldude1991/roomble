@@ -1,0 +1,86 @@
+/*
+ * Design tokens — the arcade cabinet system (see docs/DESIGN.md).
+ * Everything visual references these. No raw hex in components.
+ */
+
+:root {
+  /* ---- Colour ---- */
+  --cabinet: #1e1033; /* page background: deep violet, flat, never a gradient */
+  --bezel: #33204f; /* raised surfaces: cabinet frames, panels, menus */
+  --carpet: #2a1745; /* alternate section background, carries the carpet pattern */
+  --marquee: #ffc21a; /* primary actions, marquee lights, "new best" */
+  --joystick: #ff3d6e; /* secondary accent: destructive, live badges, coin slot */
+  --phosphor: #4df0d0; /* CRT glow, focus rings, scores and timers */
+  --ticket: #fff4dc; /* body text and headings on dark surfaces */
+  --ticket-dim: #c9b9a6; /* secondary text */
+
+  /* Darker edges for arcade-button bottoms (pressed state removes them). */
+  --marquee-edge: #b8810a;
+  --joystick-edge: #b32247;
+  --phosphor-edge: #2a9e89;
+  --bezel-edge: #241539;
+
+  /* ---- Type ---- */
+  --font-display: 'Bungee', ui-sans-serif, system-ui, sans-serif;
+  --font-display-shade: 'Bungee Shade', 'Bungee', sans-serif; /* logo only */
+  --font-ui: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  --font-hud: 'VT323', ui-monospace, monospace;
+
+  /* Type scale, 1.25 ratio. Base 17px mobile, 18px desktop (set on body). */
+  --fs-0: 0.824rem; /* ~14 */
+  --fs-1: 1rem; /* 17 base */
+  --fs-2: 1.235rem; /* ~21 */
+  --fs-3: 1.588rem; /* ~27 */
+  --fs-4: 1.941rem; /* ~33 */
+  --fs-5: 2.47rem; /* ~42 */
+  --fs-6: 3.059rem; /* ~52 */
+  --fs-7: 3.882rem; /* ~66 */
+
+  --lh-body: 1.55;
+  --lh-tight: 1.1;
+
+  /* ---- Radii (follow hierarchy) ---- */
+  --r-cabinet: 14px;
+  --r-button: 10px;
+  --r-chip: 6px;
+
+  /* ---- Spacing ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+
+  --container: 1200px;
+
+  /* ---- Glow (only for "lit" things: screens, marquee bulbs, phosphor numbers) ---- */
+  --glow-phosphor: 0 0 6px rgba(77, 240, 208, 0.55), 0 0 18px rgba(77, 240, 208, 0.3);
+  --glow-marquee: 0 0 6px rgba(255, 194, 26, 0.6), 0 0 18px rgba(255, 194, 26, 0.35);
+  --glow-joystick: 0 0 6px rgba(255, 61, 110, 0.6), 0 0 18px rgba(255, 61, 110, 0.35);
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --t-fast: 120ms;
+  --t-base: 220ms;
+  --t-slow: 400ms;
+
+  /* ---- Elevation (flat, no decorative shadows on chrome) ---- */
+  --panel-border: 1px solid rgba(255, 244, 220, 0.08);
+
+  /* ---- Z layers ---- */
+  --z-hud: 10;
+  --z-controls: 20;
+  --z-modal: 100;
+  --z-toast: 200;
+}
+
+/* Desktop bumps the base size; the scale is relative so everything follows. */
+@media (min-width: 768px) {
+  :root {
+    --fs-1: 1.059rem; /* 18 base */
+  }
+}

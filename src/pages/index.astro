@@ -1,48 +1,198 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE_NAME, SITE_TAGLINE } from '../config/site';
+import Cabinet from '../design/Cabinet.astro';
+import GameTile from '../design/GameTile.astro';
+import ArcadeButton from '../design/ArcadeButton.astro';
+import AdSlot from '../design/AdSlot.astro';
+import { floorGames } from '../games/registry';
+import { SITE_NAME } from '../config/site';
+
+const base = import.meta.env.BASE_URL;
+const href = (p: string) => `${base}${p.replace(/^\//, '')}`;
+
+const featured = floorGames.find((g) => g.featured) ?? floorGames[0]!;
+const rest = floorGames.filter((g) => g !== featured);
+const daily = floorGames.find((g) => g.meta.daily);
 ---
 
 <BaseLayout>
-  <main class="placeholder">
-    <p class="boot" data-testid="boot">System ready</p>
-    <h1 data-testid="site-name">{SITE_NAME}</h1>
-    <p class="tagline">{SITE_TAGLINE}</p>
-    <p class="note">Phase 0 is live. The arcade floor is under construction.</p>
-  </main>
+  <!-- Hero: the attract-mode cabinet + the daily panel -->
+  <section class="hero container">
+    <div class="hero__cabinet">
+      <Cabinet title={featured.meta.title} color={featured.color} as="h1" aspect="16 / 10">
+        <div class="hero__screen">
+          <p class="hero__pitch">{featured.meta.tagline}</p>
+          <p class="hero__note">Live gameplay previews land soon. For now, pick a cabinet.</p>
+        </div>
+        <Fragment slot="controls">
+          <ArcadeButton variant="primary" size="lg" icon="play" href={href(`games/${featured.meta.slug}`)}>
+            Play {featured.meta.title}
+          </ArcadeButton>
+          <span class="hero__meta">{featured.meta.category}</span>
+        </Fragment>
+      </Cabinet>
+    </div>
+
+    {
+      daily && (
+        <aside class="daily carpet">
+          <h2 class="daily__title">Today's {daily.meta.title}</h2>
+          <p class="daily__sub">Puzzle #1 · one climb a day, the same for everyone</p>
+          <ArcadeButton variant="secondary" href={href('daily')}>Play today's</ArcadeButton>
+          <p class="daily__streak">
+            Your streak <span class="daily__streak-num">0</span>
+          </p>
+        </aside>
+      )
+    }
+  </section>
+
+  <div class="container">
+    <AdSlot placement="homepage-between" width={728} height={90} />
+  </div>
+
+  <!-- The floor -->
+  <section class="floor container" aria-labelledby="floor-heading">
+    <h2 id="floor-heading" class="floor__heading">The floor</h2>
+    <p class="floor__intro">
+      {SITE_NAME} is an arcade of original games, built to play as well on a phone as on a desk.
+      Six cabinets are warming up.
+    </p>
+
+    <div class="floor__grid">
+      <GameTile
+        slug={featured.meta.slug}
+        title={featured.meta.title}
+        tagline={featured.meta.tagline}
+        category={featured.meta.category}
+        color={featured.color}
+        comingSoon={featured.status === 'coming-soon'}
+        featured
+        class="floor__featured"
+      />
+      {
+        rest.map((g) => (
+          <GameTile
+            slug={g.meta.slug}
+            title={g.meta.title}
+            tagline={g.meta.tagline}
+            category={g.meta.category}
+            color={g.color}
+            comingSoon={g.status === 'coming-soon'}
+          />
+        ))
+      }
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
-  .placeholder {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 4rem 1.5rem;
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+    padding-top: var(--sp-6);
+  }
+  @media (min-width: 900px) {
+    .hero {
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .hero__screen {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    text-align: center;
+    padding: var(--sp-4);
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(90% 80% at 50% 45%, rgba(77, 240, 208, 0.1), transparent 70%);
+  }
+  .hero__pitch {
+    margin: 0;
+    font-size: var(--fs-2);
+    color: var(--ticket);
+    max-width: 26ch;
+  }
+  @media (min-width: 900px) {
+    .hero__pitch {
+      font-size: var(--fs-3);
+    }
+    .hero__screen {
+      padding: var(--sp-6);
+      gap: var(--sp-3);
+    }
+  }
+  .hero__note {
+    margin: 0;
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
+  }
+  .hero__meta {
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
   }
 
-  .boot {
+  .daily {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: var(--sp-5);
+    border-radius: var(--r-cabinet);
+    border: var(--panel-border);
+  }
+  .daily__title {
     margin: 0;
+    font-size: var(--fs-3);
+  }
+  .daily__sub {
+    margin: 0;
+    color: var(--ticket-dim);
+    font-size: var(--fs-0);
+  }
+  .daily__streak {
+    margin: 0;
+    margin-top: var(--sp-2);
+    color: var(--ticket-dim);
+    font-size: var(--fs-0);
+  }
+  .daily__streak-num {
+    font-family: var(--font-hud);
+    font-size: var(--fs-2);
     color: var(--phosphor);
-    font-size: 0.875rem;
-    letter-spacing: 0.05em;
+    text-shadow: var(--glow-phosphor);
+    margin-left: var(--sp-1);
   }
 
-  h1 {
-    margin: 0;
-    font-size: clamp(2.5rem, 8vw, 4rem);
-    line-height: 1.05;
+  .floor {
+    padding-top: var(--sp-7);
+  }
+  .floor__heading {
+    margin-bottom: var(--sp-2);
+  }
+  .floor__intro {
+    color: var(--ticket-dim);
+    margin-bottom: var(--sp-5);
   }
 
-  .tagline {
-    margin: 0;
-    font-size: 1.125rem;
+  .floor__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-4);
   }
-
-  .note {
-    margin-top: 1rem;
-    color: var(--phosphor);
-    opacity: 0.8;
+  @media (min-width: 900px) {
+    .floor__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  /* The class lands on GameTile's root (a child component), so target it globally
+     but scoped under the grid so it can't leak. */
+  .floor__grid :global(.floor__featured) {
+    grid-column: span 2;
   }
 </style>

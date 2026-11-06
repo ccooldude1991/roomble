@@ -1,0 +1,303 @@
+---
+/*
+ * The full game-page cabinet UI: marquee, CRT screen with the game mount, the
+ * idle title overlay (Play + best), the control panel, and the pause / game-over
+ * / how-to dialogs. The client script wires it to the GameHost controller using
+ * the registry loader for the given slug. For not-yet-built games it renders a
+ * tidy "coming soon" cabinet and does nothing on the client.
+ */
+import Marquee from '../design/Marquee.astro';
+import CrtScreen from '../design/CrtScreen.astro';
+import ArcadeButton from '../design/ArcadeButton.astro';
+import SoundToggle from '../design/SoundToggle.astro';
+import Modal from '../design/Modal.astro';
+import RotatePrompt from '../design/RotatePrompt.astro';
+import type { GameMeta } from '../games/types';
+import type { MarqueeColor } from '../games/registry';
+
+interface Props {
+  meta: GameMeta;
+  color: MarqueeColor;
+  playable: boolean;
+}
+
+const { meta, color, playable } = Astro.props;
+const aspect = meta.orientation === 'landscape' ? '16 / 9' : '3 / 4';
+---
+
+<section
+  class="host"
+  data-game-host
+  data-slug={meta.slug}
+  data-orientation={meta.orientation}
+>
+  <div class="host__cabinet" data-cabinet>
+    <Marquee text={meta.title} color={color} as="h1" size="md" />
+
+    <div class="host__screen" data-screen>
+      <CrtScreen aspect={aspect}>
+        <div class="host__mount" data-game-mount></div>
+      </CrtScreen>
+
+      <div class="host__overlay" data-title-overlay>
+        {
+          playable ? (
+            <>
+              <p class="host__best">
+                best <span class="host__best-val" data-best-readout>0</span>
+              </p>
+              <ArcadeButton variant="primary" size="lg" icon="play" data-play>
+                Play
+              </ArcadeButton>
+              <button type="button" class="host__link" data-howto>How to play</button>
+            </>
+          ) : (
+            <>
+              <p class="host__soon">Coming soon</p>
+              <p class="host__soon-note">This cabinet is still in the workshop.</p>
+            </>
+          )
+        }
+      </div>
+
+      <RotatePrompt want={meta.orientation === 'landscape' ? 'landscape' : 'portrait'} />
+    </div>
+
+    {
+      playable && (
+        <div class="host__panel">
+          <ArcadeButton variant="icon" icon="pause" label="Pause" data-pause-btn />
+          <ArcadeButton variant="icon" icon="fullscreen" label="Fullscreen" data-fullscreen />
+          <SoundToggle />
+        </div>
+      )
+    }
+  </div>
+
+  {
+    playable && (
+      <>
+        <Modal id="pause-modal" title="Paused" dismissible={false}>
+          <p>Take a breath. Your run is waiting.</p>
+          <Fragment slot="footer">
+            <ArcadeButton variant="primary" data-resume>Resume</ArcadeButton>
+            <ArcadeButton variant="secondary" data-restart>Restart</ArcadeButton>
+            <ArcadeButton variant="secondary" data-quit>Quit</ArcadeButton>
+          </Fragment>
+        </Modal>
+
+        <Modal id="gameover-modal" title="Game over" dismissible={false}>
+          <div class="host__result">
+            <div>
+              <span class="host__result-label">score</span>
+              <span class="host__result-score" data-go-score>0</span>
+            </div>
+            <div>
+              <span class="host__result-label">best</span>
+              <span class="host__result-best" data-go-best>0</span>
+            </div>
+          </div>
+          <p class="host__newbest" data-go-newbest>New best!</p>
+          <Fragment slot="footer">
+            <ArcadeButton variant="primary" icon="play" data-again>Play again</ArcadeButton>
+            <ArcadeButton variant="secondary" data-quit>Quit</ArcadeButton>
+          </Fragment>
+        </Modal>
+
+        <Modal id="howto-modal" title={`How to play ${meta.title}`}>
+          <ol class="host__howto">
+            {meta.howToPlay.map((step) => (
+              <li>{step}</li>
+            ))}
+          </ol>
+          <Fragment slot="footer">
+            <ArcadeButton variant="primary" data-howto-done>Got it</ArcadeButton>
+          </Fragment>
+        </Modal>
+      </>
+    )
+  }
+</section>
+
+<style>
+  .host__cabinet {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-4);
+    background: var(--bezel);
+    border: var(--panel-border);
+    border-radius: var(--r-cabinet);
+  }
+  .host__cabinet :global(.marquee) {
+    width: 100%;
+  }
+
+  .host__screen {
+    position: relative;
+  }
+  .host__mount {
+    position: absolute;
+    inset: 0;
+  }
+
+  .host__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-hud);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-3);
+    text-align: center;
+    padding: var(--sp-5);
+    background: radial-gradient(90% 90% at 50% 45%, rgba(6, 4, 13, 0.3), rgba(6, 4, 13, 0.75));
+  }
+  .host__overlay[data-hidden] {
+    display: none;
+  }
+  .host__best {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
+    letter-spacing: 0.02em;
+  }
+  .host__best-val {
+    font-family: var(--font-hud);
+    font-size: var(--fs-3);
+    color: var(--phosphor);
+    text-shadow: var(--glow-phosphor);
+  }
+  .host__link {
+    background: none;
+    border: none;
+    color: var(--phosphor);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-size: var(--fs-1);
+  }
+  .host__soon {
+    margin: 0;
+    font-family: var(--font-hud);
+    font-size: var(--fs-5);
+    color: var(--marquee);
+    text-shadow: var(--glow-marquee);
+  }
+  .host__soon-note {
+    margin: 0;
+    color: var(--ticket-dim);
+  }
+
+  .host__panel {
+    display: flex;
+    gap: var(--sp-2);
+    justify-content: flex-end;
+  }
+
+  .host__result {
+    display: flex;
+    gap: var(--sp-6);
+    margin-bottom: var(--sp-2);
+  }
+  .host__result-label {
+    display: block;
+    font-size: var(--fs-0);
+    color: var(--ticket-dim);
+  }
+  .host__result-score,
+  .host__result-best {
+    font-family: var(--font-hud);
+    font-size: var(--fs-6);
+    color: var(--phosphor);
+    text-shadow: var(--glow-phosphor);
+  }
+  .host__newbest {
+    display: none;
+    margin: 0;
+    font-family: var(--font-display);
+    color: var(--marquee);
+    text-shadow: var(--glow-marquee);
+  }
+  .host__newbest[data-show] {
+    display: block;
+  }
+
+  .host__howto {
+    margin: 0;
+    padding-left: 1.3em;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+</style>
+
+<script>
+  import { GameHost } from './host';
+  import { getEntry } from '../games/registry';
+
+  const root = document.querySelector<HTMLElement>('[data-game-host]');
+  if (root) {
+    const slug = root.dataset.slug ?? '';
+    const entry = getEntry(slug);
+    const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel);
+
+    if (entry && entry.status === 'playable' && entry.load) {
+      const pauseModal = q<HTMLDialogElement>('#pause-modal')!;
+      const gameoverModal = q<HTMLDialogElement>('#gameover-modal')!;
+      const howtoModal = q<HTMLDialogElement>('#howto-modal');
+
+      const host = new GameHost({
+        slug,
+        meta: entry.meta,
+        loader: entry.load,
+        els: {
+          cabinet: q('[data-cabinet]')!,
+          mount: q('[data-game-mount]')!,
+          screen: q('[data-screen]')!,
+          titleOverlay: q('[data-title-overlay]')!,
+          bestReadouts: Array.from(root.querySelectorAll<HTMLElement>('[data-best-readout]')),
+          pauseModal,
+          gameoverModal,
+          howtoModal,
+          rotate: q('[data-rotate]'),
+          goScore: q('[data-go-score]')!,
+          goBest: q('[data-go-best]')!,
+          goNewBest: q('[data-go-newbest]')!,
+        },
+      });
+      host.init();
+
+      q('[data-play]')?.addEventListener('click', () => void host.start());
+      q('[data-pause-btn]')?.addEventListener('click', () => host.pause());
+      q('[data-fullscreen]')?.addEventListener('click', () => host.toggleFullscreen());
+      q('[data-resume]')?.addEventListener('click', () => host.resume());
+      q('[data-restart]')?.addEventListener('click', () => void host.restart());
+      q('[data-again]')?.addEventListener('click', () => void host.restart());
+      root.querySelectorAll('[data-quit]').forEach((b) =>
+        b.addEventListener('click', () => host.quit()),
+      );
+      q('[data-howto]')?.addEventListener('click', () => host.showHowTo());
+      q('[data-howto-done]')?.addEventListener('click', () => howtoModal?.close());
+
+      // Esc inside dialogs: resume (pause) or quit (game over) rather than just closing.
+      pauseModal.addEventListener('cancel', (e) => {
+        e.preventDefault();
+        host.resume();
+      });
+      gameoverModal.addEventListener('cancel', (e) => {
+        e.preventDefault();
+        host.quit();
+      });
+
+      // Keyboard pause toggle.
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyP') {
+          if (pauseModal.open) host.resume();
+          else host.pause();
+        }
+      });
+    }
+  }
+</script>
