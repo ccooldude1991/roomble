@@ -109,22 +109,23 @@ export const games: GameEntry[] = [
   },
   {
     color: 'marquee',
-    status: 'coming-soon',
+    status: 'playable',
     aspect: '5 / 8',
+    load: () => import('./brickquake'),
     meta: {
       slug: 'brickquake',
       title: 'Brickquake',
       tagline: 'Break the wall with ball and paddle. Mind the boss stage.',
       description:
-        'Break walls of bricks with a ball and paddle. Bricks crack, explode and chain-react, power-ups drop into the fray, and every fifth stage throws a boss wall that fights back. Angle your shots and keep the ball alive.',
+        'Smash walls of bricks with a ball and paddle. Bricks crack, explode and chain-react, power-ups rain down to catch, and every fifth stage ends with a boss wall that fights back. The ball leaves the paddle based on where it hits, so you aim with the paddle.',
       howToPlay: [
         'Move the paddle to bounce the ball.',
         'Break every breakable brick to clear the stage.',
-        "Don't let the ball fall past the paddle.",
+        "Catch power-ups; don't let the ball fall past the paddle (3 lives).",
       ],
       controls: {
-        desktop: ['Mouse, A / D or Arrows to move', 'Space to launch'],
-        mobile: ['Drag to move the paddle', 'Tap to launch'],
+        desktop: ['Mouse moves the paddle (or A / D, arrows)', 'Space or click to launch and fire lasers', 'P or Esc to pause'],
+        mobile: ['Drag in the lower area to move the paddle', 'Tap to launch and to fire'],
       },
       orientation: 'portrait',
       category: 'arcade',

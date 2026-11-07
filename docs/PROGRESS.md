@@ -2,17 +2,40 @@
 
 ## Status
 
-**Phase 3a complete.** Starfuse (the merge/slide puzzle) is built in plain TypeScript + Canvas 2D to
-spec and live on the floor. Build, 58 unit tests and the Playwright e2e suite are green, no console
-errors. Three games are now playable (Stackdown, Rooftop Rush, Starfuse). Next: Phase 3b (Brickquake).
+**Phase 3b complete.** Brickquake (the brick-breaker) is built in Phaser 3 to spec and live on the
+floor. Build, 78 unit tests and the Playwright e2e suite are green, no console errors. Four games are
+now playable (Stackdown, Rooftop Rush, Starfuse, Brickquake). Next: Phase 3c (Rungs + daily).
 
-> Note: no Phase 2 checkpoint feedback was received, so no new global rules were added to CLAUDE.md /
-> DESIGN.md before Starfuse. That feedback loop can still happen any time.
+> Note: the Phase 2 checkpoint (play-and-feedback) is still open; no new global rules have been added
+> to CLAUDE.md / DESIGN.md yet.
 
-Earlier: Phase 0 (scaffold + deploy), Phase 1 (design system + site shell), Phase 2 (Stackdown,
-Rooftop Rush) complete.
+Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse) complete.
 
 ## Done
+
+### Phase 3b — Brickquake (Phaser 3)
+- **Pure, tested logic** (`src/games/brickquake/`): `bricks.ts` (6 types with hit/crack/value),
+  `stages.ts` (ASCII layouts + parser + **validator** + procedural generator), `physics.ts`
+  (paddle-angle bounce, min-vertical-speed, anti-tunnel substep count), `scoring.ts`, `powerups.ts`,
+  `ai.ts` (attract landing prediction).
+- **20 unit tests** covering the spec's "Done when": every stage is clearable with no fully-enclosed
+  breakable brick (hand-made and procedural), the ball keeps a minimum vertical speed (no flat loop),
+  substep counting prevents tunnelling at max speed, plus brick/scoring behaviour.
+- **Phaser scene**: manual, substepped ball integrator with the custom paddle-angle bounce; ball
+  speed ramps per paddle hit (resets per stage); mouse / A-D / arrows paddle, click/Space to launch.
+- **Brick types**: normal, tough (cracks), steel (unbreakable), explosive (chain reaction), mystery
+  (drops a power-up), shifter (present as a type — see Decisions).
+- **Power-ups** (catch with the paddle): multiball ×3, wide, laser (fire!), sticky (catch + aim),
+  fireball (passes through), slow ball, extra life; negative wide-marked narrow and fast.
+- **Bosses** every 5th stage: a brick-built pixel creature that moves, regenerates armour, drops
+  hazards to dodge, and has a health bar; stats escalate (variant + tier).
+- **Juice**: ball trail, brick particles, chain-explosion shake, hit-stop on boss hits, paddle
+  squash, stage-clear shatter + fade. **Audio**: paddle bonk, brick hits pitched by row, crack,
+  explosion, power-up, laser, life lost, boss roar, stage clear. Reduced-motion aware.
+- Attract bot tracks the predicted ball landing with lag. Wired into the registry/floor; **e2e** for
+  keyboard and pointer.
+
+### Phase 3a — Starfuse (Canvas 2D, no engine)
 
 ### Phase 3a — Starfuse (Canvas 2D, no engine)
 - **Pure, tested logic** (`src/games/starfuse/`): `board.ts` (slide/merge in four directions with no
@@ -145,8 +168,8 @@ Rooftop Rush) complete.
 
 ## Known issues
 
-- Brickquake, Rungs and Arcbolt are still placeholders ("coming soon" cabinets); Stackdown, Rooftop
-  Rush and Starfuse are fully playable.
+- Rungs and Arcbolt are still placeholders ("coming soon" cabinets); Stackdown, Rooftop Rush,
+  Starfuse and Brickquake are fully playable.
 - Browser-pane automation can't deliver Phaser's keyboard events (no keyCode), so keyboard play was
   verified with Playwright (real key events) instead; real browsers are unaffected.
 - Preview clips don't exist yet (Phase 3), so tiles and the hero show a placeholder screen with the
@@ -158,10 +181,23 @@ Rooftop Rush) complete.
 
 ## Next
 
-- **Phase 3b**: Brickquake (`specs/04-brickquake.md`).
-- Then Phase 3c Rungs (+ daily generator + homepage daily panel), 3d Arcbolt, 3e the
-  preview-capture script.
+- **Phase 3c**: Rungs (`specs/05-rungs.md`) — the daily word-ladder, its build-time puzzle generator,
+  and wiring the homepage daily panel + `/daily`.
+- Then Phase 3d Arcbolt, 3e the preview-capture script.
 - The Phase 2 checkpoint (play-and-feedback) is still open and can run whenever the owner wants.
+
+## Decisions (Phase 3b — Brickquake)
+
+- **Manual substepped ball physics instead of Arcade Physics bodies.** The scene uses Phaser 3 for
+  scene/loop/input/render but integrates the ball itself in small substeps. This is what makes the
+  spec's guarantees enforceable and testable: the custom paddle-angle bounce, a minimum vertical
+  speed (no flat loop), and no tunnelling through bricks at max speed.
+- **Shifter brick** is present as a distinct type (colour + value) but its side-to-side motion is
+  deferred — the grid-keyed collision assumes fixed cells; adding moving bricks needs a separate
+  non-grid collision pass. Everything else about it works.
+- **Bosses**: one brick-creature body with per-stage stat/colour variants (hp, speed, hazard rate)
+  rather than four hand-drawn shapes; the fight mechanics (health bar, armour regen, dodge hazards,
+  beatable) are all in. More distinct shapes can be added later.
 
 ## Decisions (Phase 2b)
 
