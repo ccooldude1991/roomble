@@ -20,7 +20,7 @@ const more = floorGames.filter((g) => g.meta.slug !== meta.slug).slice(0, 3);
 <BaseLayout title={meta.title} description={meta.description}>
   <div class="game container">
     <div class="game__stage">
-      <GameHost meta={meta} color={color} playable={playable} />
+      <GameHost meta={meta} color={color} playable={playable} aspect={entry.aspect} />
     </div>
 
     <aside class="game__aside">

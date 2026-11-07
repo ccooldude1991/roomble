@@ -14,6 +14,8 @@ export interface GameEntry {
   meta: GameMeta;
   color: MarqueeColor;
   status: 'playable' | 'coming-soon';
+  /** CSS aspect-ratio of the game screen (matches the game's logical resolution). */
+  aspect?: string;
   /** Hidden from the public floor (e.g. the shell test game). */
   hidden?: boolean;
   /** Spans two columns on the floor. */
@@ -25,22 +27,32 @@ export interface GameEntry {
 export const games: GameEntry[] = [
   {
     color: 'phosphor',
-    status: 'coming-soon',
+    status: 'playable',
     featured: true,
+    aspect: '9 / 16',
+    load: () => import('./stackdown'),
     meta: {
       slug: 'stackdown',
       title: 'Stackdown',
       tagline: 'Stack the falling blocks, clear full rows, chase the combo.',
       description:
-        'A falling-block puzzle about building up, then clearing big. Complete full rows to detonate them in a cascade, stack combos for a rising multiplier, and feel the tempo climb as you reach higher tiers.',
+        'A falling-block puzzle about building up, then clearing big. Complete full rows to detonate them in a cascade, stack combos for a rising multiplier, and feel the tempo climb as you reach higher tiers. Charge the meter to trigger a Shockwave that blasts the bottom rows.',
       howToPlay: [
         'Move and rotate each falling piece.',
-        'Fill a full row to clear it.',
-        "Keep the stack low — it's over when a piece can't spawn.",
+        'Fill a full row to clear it; clear four at once for a Stackdown.',
+        "Keep the stack low — it's over when a new piece can't appear.",
       ],
       controls: {
-        desktop: ['Arrow keys or A / D to move', 'Up or W to rotate', 'Down to soft drop, Space to hard drop'],
-        mobile: ['Swipe left or right to move', 'Tap to rotate', 'Swipe down to drop'],
+        desktop: [
+          'Left / Right to move, Up or X to rotate, Z to rotate back',
+          'Down to soft drop, Space to hard drop',
+          'C to hold, E for Shockwave, P or Esc to pause',
+        ],
+        mobile: [
+          'Drag sideways to move, tap to rotate',
+          'Swipe down to hard drop, drag down to soft drop',
+          'Swipe up to hold; use the Hold / Shock buttons',
+        ],
       },
       orientation: 'portrait',
       category: 'arcade',
@@ -49,6 +61,7 @@ export const games: GameEntry[] = [
   {
     color: 'marquee',
     status: 'coming-soon',
+    aspect: '16 / 9',
     meta: {
       slug: 'rooftop-rush',
       title: 'Rooftop Rush',
@@ -71,6 +84,7 @@ export const games: GameEntry[] = [
   {
     color: 'joystick',
     status: 'coming-soon',
+    aspect: '3 / 4',
     meta: {
       slug: 'starfuse',
       title: 'Starfuse',
@@ -93,6 +107,7 @@ export const games: GameEntry[] = [
   {
     color: 'marquee',
     status: 'coming-soon',
+    aspect: '5 / 8',
     meta: {
       slug: 'brickquake',
       title: 'Brickquake',
@@ -115,6 +130,7 @@ export const games: GameEntry[] = [
   {
     color: 'ticket',
     status: 'coming-soon',
+    aspect: '3 / 4',
     meta: {
       slug: 'rungs',
       title: 'Rungs',
@@ -138,6 +154,7 @@ export const games: GameEntry[] = [
   {
     color: 'phosphor',
     status: 'coming-soon',
+    aspect: '16 / 9',
     meta: {
       slug: 'arcbolt',
       title: 'Arcbolt',
@@ -162,6 +179,7 @@ export const games: GameEntry[] = [
     color: 'phosphor',
     status: 'playable',
     hidden: true,
+    aspect: '3 / 4',
     load: () => import('./cabinet-test'),
     meta: {
       slug: 'cabinet-test',

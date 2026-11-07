@@ -19,10 +19,15 @@ interface Props {
   meta: GameMeta;
   color: MarqueeColor;
   playable: boolean;
+  /** Screen aspect-ratio; falls back to orientation. */
+  aspect?: string;
 }
 
-const { meta, color, playable } = Astro.props;
-const aspect = meta.orientation === 'landscape' ? '16 / 9' : '3 / 4';
+const { meta, color, playable, aspect: aspectProp } = Astro.props;
+const aspect = aspectProp ?? (meta.orientation === 'landscape' ? '16 / 9' : '3 / 4');
+// Portrait screens are sized by height so the whole playfield fits the viewport.
+const [aw, ah] = aspect.split('/').map((s) => parseFloat(s.trim()));
+const portrait = (aw ?? 1) < (ah ?? 1);
 ---
 
 <section
@@ -30,6 +35,7 @@ const aspect = meta.orientation === 'landscape' ? '16 / 9' : '3 / 4';
   data-game-host
   data-slug={meta.slug}
   data-orientation={meta.orientation}
+  data-portrait={portrait ? '' : undefined}
 >
   <div class="host__cabinet" data-cabinet>
     <Marquee text={meta.title} color={color} as="h1" size="md" />
@@ -139,6 +145,23 @@ const aspect = meta.orientation === 'landscape' ? '16 / 9' : '3 / 4';
   .host__mount {
     position: absolute;
     inset: 0;
+  }
+
+  /* Portrait games: size the screen by height so the full well fits the viewport,
+     and centre the (narrower) cabinet rather than stretching it wide. */
+  .host[data-portrait] .host__cabinet {
+    max-width: 440px;
+    margin-inline: auto;
+  }
+  .host[data-portrait] .host__screen {
+    display: flex;
+    justify-content: center;
+    height: min(72vh, 680px);
+  }
+  .host[data-portrait] .host__screen :global(.crt) {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
   }
 
   .host__overlay {

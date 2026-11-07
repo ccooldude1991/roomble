@@ -60,6 +60,7 @@ export class GameHost {
   #save: ReturnType<typeof createSave>;
   #module: GameModule | null = null;
   #instance: GameInstance | null = null;
+  #attractInstance: GameInstance | null = null;
   #state: State = 'idle';
   #best: number;
   #systemPaused = false; // paused by blur/hidden/rotation, not the player
@@ -102,6 +103,32 @@ export class GameHost {
     );
 
     this.#checkOrientation();
+    void this.#startAttract();
+  }
+
+  /** Run the game's self-playing demo behind the idle title ("attract mode"). */
+  async #startAttract(): Promise<void> {
+    if (this.#state !== 'idle' || this.#attractInstance) return;
+    try {
+      if (!this.#module) {
+        const mod = await this.#opts.loader();
+        this.#module = 'default' in mod ? mod.default : mod;
+      }
+      if (this.#state !== 'idle' || !this.#module.attract) return;
+      const inst = await this.#module.attract(this.#els.mount);
+      if (this.#state !== 'idle') {
+        inst.destroy();
+        return;
+      }
+      this.#attractInstance = inst;
+    } catch (err) {
+      console.error('[shell] attract failed', err);
+    }
+  }
+
+  #stopAttract(): void {
+    this.#attractInstance?.destroy();
+    this.#attractInstance = null;
   }
 
   // ---- Lifecycle -----------------------------------------------------------
@@ -119,6 +146,7 @@ export class GameHost {
     void audio.unlock();
     this.#state = 'loading';
     this.#els.titleOverlay.toggleAttribute('data-hidden', true);
+    this.#stopAttract();
 
     try {
       if (!this.#module) {
@@ -167,6 +195,7 @@ export class GameHost {
     this.#state = 'idle';
     this.#unlockScroll();
     this.#els.titleOverlay.toggleAttribute('data-hidden', false);
+    void this.#startAttract();
   }
 
   toggleFullscreen(): void {
@@ -193,6 +222,7 @@ export class GameHost {
   destroy(): void {
     this.#instance?.destroy();
     this.#instance = null;
+    this.#stopAttract();
     this.#unlockScroll();
     for (const d of this.#disposers) d();
     this.#disposers = [];
