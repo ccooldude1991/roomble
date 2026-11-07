@@ -25,6 +25,14 @@ export const SITE_URL = import.meta.env?.SITE_URL ?? 'http://localhost:4321';
  */
 export const DAILY_TIMEZONE = 'Asia/Singapore';
 
+/**
+ * The date (in DAILY_TIMEZONE) of daily puzzle #1. Day numbers count forward from
+ * here, so "Rungs #N" and the weekday/weekend length pattern are anchored to it.
+ * The Rungs generator (scripts/build-rungs.ts) is aligned to this same date — keep
+ * them in sync if you change it and re-run `npm run build:rungs`.
+ */
+export const RUNGS_EPOCH = '2026-01-01';
+
 /** Ad providers the ad service knows how to drive. */
 export type AdProvider = 'none' | 'adsense' | 'h5games';
 

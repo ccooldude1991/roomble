@@ -26,8 +26,19 @@ Sound effects are authored in-house as ZzFX parameter presets (code, see
 
 ## Word lists
 
-_None added yet. Word lists must come from a public-domain or permissively licensed source
-and be logged here._
+Used by `scripts/build-rungs.ts` to generate the Rungs dictionaries and puzzles. The raw
+source files are downloaded and cached locally (git-ignored); only the derived, filtered word
+lists and start/end/par puzzle data are committed (`src/games/rungs/data/`). A filtered list of
+common English words is factual, not a creative work, but the sources are logged here for
+provenance.
+
+| List | Role | Licence | Source |
+|---|---|---|---|
+| ENABLE (enable1.txt) | Validity dictionary (is it a real word?) | Public domain | https://github.com/dolph/dictionary |
+| OpenSubtitles 2018 frequency (en_50k.txt) | Filter to common words only | CC BY-SA 4.0 | https://github.com/hermitdave/FrequencyWords |
+
+The shipped Rungs dictionary is ENABLE words that also appear in the frequency list, reduced to
+the largest connected component of the one-letter-change graph (so every puzzle is solvable).
 
 ## Code dependencies
 

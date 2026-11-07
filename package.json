@@ -14,7 +14,8 @@
     "astro": "astro",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build:rungs": "node --experimental-strip-types scripts/build-rungs.ts"
   },
   "dependencies": {
     "@fontsource/bungee": "^5.3.0",

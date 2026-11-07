@@ -2,6 +2,9 @@
 dist/
 .output/
 
+# cached raw word/frequency lists for the Rungs generator (output is committed)
+/scripts/data/
+
 # dependencies
 node_modules/
 

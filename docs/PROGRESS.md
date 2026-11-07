@@ -2,16 +2,51 @@
 
 ## Status
 
-**Phase 3b complete.** Brickquake (the brick-breaker) is built in Phaser 3 to spec and live on the
-floor. Build, 78 unit tests and the Playwright e2e suite are green, no console errors. Four games are
-now playable (Stackdown, Rooftop Rush, Starfuse, Brickquake). Next: Phase 3c (Rungs + daily).
+**Phase 3c complete.** Rungs (the daily word ladder) is built in plain TS + DOM/CSS to spec and live
+on the floor, with the build-time puzzle generator and the homepage daily panel wired to the live
+puzzle number and streak. Build, 115 unit tests and the Playwright e2e suite are green, no console
+errors. Five games are now playable (Stackdown, Rooftop Rush, Starfuse, Brickquake, Rungs); only
+Arcbolt is still coming soon. Next: Phase 3d (Arcbolt).
 
 > Note: the Phase 2 checkpoint (play-and-feedback) is still open; no new global rules have been added
 > to CLAUDE.md / DESIGN.md yet.
 
-Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse) complete.
+Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse), Phase 3b
+(Brickquake) complete.
 
 ## Done
+
+### Phase 3c — Rungs (daily word ladder) + generator + daily panel
+- **Offline generator** (`scripts/build-rungs.ts`, run with `npm run build:rungs`): downloads and
+  caches ENABLE (validity) + an OpenSubtitles frequency list (commonness), builds a dictionary per
+  length (4 and 5) reduced to the largest one-letter-change component (every puzzle solvable), and
+  generates a year of daily puzzles (par 4–8, no repeated pairs, limited endpoint reuse) aligned to
+  `RUNGS_EPOCH`. Output committed to `src/games/rungs/data/` (`words.json`, `puzzles.json`); raw
+  source lists are git-ignored. **Solution paths are never shipped** — hints are computed client-side
+  by BFS over the dictionary.
+- **Pure, tested logic** (`src/games/rungs/`): `graph.ts` (one-letter neighbours, BFS **par**,
+  shortest path for hints), `validate.ts` (one-letter-change validator + messages), `daily.ts`
+  (Singapore-day date math, weekday/weekend length, puzzle selection), `streaks.ts` (streak/dist,
+  missed-day reset, same-day no-double-count), `share.ts` (spoiler-free share text).
+- **37 Rungs unit tests** covering the spec's "Done when": BFS par, one-letter validator, date
+  rollover across time zones, streak logic, share text — plus a data-integrity test that re-derives
+  every shipped puzzle's par by a fresh BFS over the shipped dictionary.
+- **Game** (`game.ts`): DOM/CSS neon ladder — goal word glowing at the top, start at the bottom, each
+  accepted rung lighting up with the changed letter in marquee gold; custom on-screen arcade keyboard
+  (also physical keyboard, captured so typing never triggers shell shortcuts), target-letter key
+  highlights after the first move, up to 2 hints, invalid-word shake + buzz, solve light-up +
+  letter-tile confetti, results screen (mini ladder squares, streak/max/played, over-par histogram)
+  with share (clipboard + Web Share), practice mode, and an attract demo that types out a solved
+  ladder. Daily result persists so a revisit shows the finished climb.
+- **Homepage daily panel + `/daily`**: show the live `Rungs #N` and the viewer's streak (computed
+  client-side from tiny pure modules only — the word data is **not** pulled into the homepage bundle,
+  so the <200 KB budget holds). `/daily` no longer says "coming soon".
+- **Config**: `RUNGS_EPOCH` added to `src/config/site.ts` (puzzle #1 date; generator is aligned to
+  it).
+- **Shell fix (affects all portrait games)**: on phones narrower than the portrait screen the cabinet
+  used to overflow and clip (e.g. the right keyboard keys). Fixed by giving the portrait cabinet a
+  definite `width: min(100%, 440px)` and the game-page grid column `minmax(0, 1fr)` so the
+  height-driven screen can't push the column wider than the page. Verified Rungs fits fully at 375px.
 
 ### Phase 3b — Brickquake (Phaser 3)
 - **Pure, tested logic** (`src/games/brickquake/`): `bricks.ts` (6 types with hit/crack/value),
@@ -153,9 +188,10 @@ Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse
   in-game title/how-to. Restart is a destroy + remount (no page reload).
 - **Game-page UI is one component** (`GameHost.astro`) wired by a client script that pulls the lazy
   loader from the registry by slug — so only the opened game's bundle loads.
-- **Registry** (`src/games/registry.ts`) is the single source for the floor and game pages. Stackdown
-  is playable; the other five are `coming-soon` placeholders with full meta taken from `specs/`;
-  `cabinet-test` is a hidden, playable shell-verification game.
+- **Registry** (`src/games/registry.ts`) is the single source for the floor and game pages. Five
+  games are playable (Stackdown, Rooftop Rush, Starfuse, Brickquake, Rungs); Arcbolt is still a
+  `coming-soon` placeholder with full meta taken from `specs/`; `cabinet-test` is a hidden, playable
+  shell-verification game.
 - **Audio context is created lazily** on the first user gesture (not at import), avoiding the browser
   autoplay-warning and keeping the "no console warnings" bar.
 - **Fonts self-hosted via @fontsource** rather than Google Fonts links — faster, no third-party
@@ -168,23 +204,44 @@ Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse
 
 ## Known issues
 
-- Rungs and Arcbolt are still placeholders ("coming soon" cabinets); Stackdown, Rooftop Rush,
-  Starfuse and Brickquake are fully playable.
+- Arcbolt is the only remaining placeholder ("coming soon" cabinet); Stackdown, Rooftop Rush,
+  Starfuse, Brickquake and Rungs are fully playable.
 - Browser-pane automation can't deliver Phaser's keyboard events (no keyCode), so keyboard play was
   verified with Playwright (real key events) instead; real browsers are unaffected.
 - Preview clips don't exist yet (Phase 3), so tiles and the hero show a placeholder screen with the
   game's tagline instead of live gameplay.
 - `/privacy` and `/terms` are honest **drafts** and carry a visible "Draft for review" banner — the
   owner should have them reviewed before launch; the terms governing-law line is a placeholder.
-- Daily streak / puzzle number on the homepage and `/daily` are static zeros until Rungs ships
-  (Phase 3).
+- The daily puzzle data covers one year from `RUNGS_EPOCH`; beyond that puzzles wrap (still valid,
+  but the weekday/weekend 4/5-letter pattern drifts). Re-run `npm run build:rungs` yearly to refresh.
 
 ## Next
 
-- **Phase 3c**: Rungs (`specs/05-rungs.md`) — the daily word-ladder, its build-time puzzle generator,
-  and wiring the homepage daily panel + `/daily`.
-- Then Phase 3d Arcbolt, 3e the preview-capture script.
+- **Phase 3d**: Arcbolt (`specs/06-arcbolt.md`) — the twin-stick arena shooter.
+- Then Phase 3e, the preview-capture script (`npm run capture`) for live gameplay thumbnails.
 - The Phase 2 checkpoint (play-and-feedback) is still open and can run whenever the owner wants.
+
+## Decisions (Phase 3c — Rungs)
+
+- **Dictionary = ENABLE ∩ a frequency list, largest component only.** Validity and "commonness" are
+  the same word set, so par (BFS over that set) and player validation agree, no obscure word turns up
+  mid-climb, and restricting to the giant connected component guarantees every generated puzzle is
+  solvable. ~2.3k four-letter and ~2.8k five-letter words.
+- **Generation is offline; only data is committed.** `scripts/build-rungs.ts` is run by hand and
+  writes `words.json` + `puzzles.json`; the site build imports those and needs no network. Raw source
+  lists are cached and git-ignored. Per the spec, **no solution paths are shipped** — hints are a
+  client-side BFS over the shipped dictionary.
+- **Singapore day = whole UTC+8 days since the Unix epoch.** No timezone library: Singapore never
+  observes DST, so the day rolls at 16:00 UTC and weekday/weekend (→ 4/5-letter) comes straight from
+  the day number. `RUNGS_EPOCH` in `site.ts` anchors puzzle #1 and the generator uses the same date.
+- **Rungs owns its results screen** (mini ladder, streak/distribution, share) and does not emit
+  `gameover`, so the shell's generic game-over modal doesn't double up; streaks are saved via
+  `ctx.save` like any other game state. The shell pause button and how-to still work as usual.
+- **"Beat par" = finishing on par.** Par is the shortest path, so it can be equalled but not beaten;
+  reaching the goal in exactly par steps triggers the "Perfect climb" flourish.
+- **e2e drives the climb via a gated telemetry hint.** `window.__rungs.next` (the optimal next word)
+  is exposed only when `window.__rungsTest` is set, so the smoke test can climb any day's puzzle
+  generically without that convenience shipping to players.
 
 ## Decisions (Phase 3b — Brickquake)
 

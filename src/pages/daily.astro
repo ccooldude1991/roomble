@@ -20,18 +20,20 @@ const rungs = getEntry('rungs');
 
     {
       rungs && (
-        <div class="daily-page__cabinet">
+        <div class="daily-page__cabinet" data-daily-panel>
           <Cabinet title={`Today's ${rungs.meta.title}`} color={rungs.color} aspect="16 / 9">
             <div class="daily-page__screen">
+              <p class="daily-page__num" data-rungs-number>
+                Rungs
+              </p>
               <p class="daily-page__pitch">{rungs.meta.tagline}</p>
-              <p class="daily-page__soon">Coming soon</p>
             </div>
             <Fragment slot="controls">
               <ArcadeButton variant="primary" href={href(`games/${rungs.meta.slug}`)}>
-                Open the cabinet
+                <span data-rungs-cta>Play today's</span>
               </ArcadeButton>
               <span class="daily-page__streak">
-                streak <span class="daily-page__streak-num">0</span>
+                streak <span class="daily-page__streak-num" data-rungs-streak>0</span>
               </span>
             </Fragment>
           </Cabinet>
@@ -78,10 +80,10 @@ const rungs = getEntry('rungs');
     max-width: 30ch;
     color: var(--ticket);
   }
-  .daily-page__soon {
+  .daily-page__num {
     margin: 0;
     font-family: var(--font-hud);
-    font-size: var(--fs-3);
+    font-size: var(--fs-4);
     color: var(--marquee);
     text-shadow: var(--glow-marquee);
   }
@@ -107,3 +109,25 @@ const rungs = getEntry('rungs');
     gap: var(--sp-2);
   }
 </style>
+
+<script>
+  import { RUNGS_EPOCH } from '../config/site';
+  import { dayIndex, sgDayNumber } from '../games/rungs/daily';
+  import { createSave } from '../services/save';
+  import { EMPTY_STATS, currentStreak, solvedToday, type Stats } from '../games/rungs/streaks';
+
+  const panel = document.querySelector('[data-daily-panel]');
+  if (panel) {
+    const now = Date.now();
+    const number = dayIndex(now, RUNGS_EPOCH) + 1;
+    const today = sgDayNumber(now);
+    const stats = createSave('rungs').get<Stats>('stats', EMPTY_STATS);
+
+    const numEl = panel.querySelector('[data-rungs-number]');
+    if (numEl) numEl.textContent = `Rungs #${number}`;
+    const streakEl = panel.querySelector('[data-rungs-streak]');
+    if (streakEl) streakEl.textContent = String(currentStreak(stats, today));
+    const cta = panel.querySelector('[data-rungs-cta]');
+    if (cta && solvedToday(stats, today)) cta.textContent = "See today's result";
+  }
+</script>

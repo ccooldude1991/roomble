@@ -13,6 +13,13 @@ const href = (p: string) => `${base}${p.replace(/^\//, '')}`;
 const featured = floorGames.find((g) => g.featured) ?? floorGames[0]!;
 const rest = floorGames.filter((g) => g !== featured);
 const daily = floorGames.find((g) => g.meta.daily);
+
+const litCount = floorGames.filter((g) => g.status === 'playable').length;
+const soonCount = floorGames.length - litCount;
+const floorIntro =
+  soonCount > 0
+    ? `${litCount} cabinets are lit and playable; ${soonCount} more ${soonCount === 1 ? 'is' : 'are'} warming up.`
+    : `All ${floorGames.length} cabinets are lit. Pick one and play.`;
 ---
 
 <BaseLayout>
@@ -35,12 +42,16 @@ const daily = floorGames.find((g) => g.meta.daily);
 
     {
       daily && (
-        <aside class="daily carpet">
+        <aside class="daily carpet" data-daily-panel>
           <h2 class="daily__title">Today's {daily.meta.title}</h2>
-          <p class="daily__sub">Puzzle #1 · one climb a day, the same for everyone</p>
-          <ArcadeButton variant="secondary" href={href('daily')}>Play today's</ArcadeButton>
+          <p class="daily__sub">
+            <span data-rungs-number>Puzzle</span> · one climb a day, the same for everyone
+          </p>
+          <ArcadeButton variant="secondary" href={href(`games/${daily.meta.slug}`)}>
+            <span data-rungs-cta>Play today's</span>
+          </ArcadeButton>
           <p class="daily__streak">
-            Your streak <span class="daily__streak-num">0</span>
+            Your streak <span class="daily__streak-num" data-rungs-streak>0</span>
           </p>
         </aside>
       )
@@ -56,7 +67,7 @@ const daily = floorGames.find((g) => g.meta.daily);
     <h2 id="floor-heading" class="floor__heading">The floor</h2>
     <p class="floor__intro">
       {SITE_NAME} is an arcade of original games, built to play as well on a phone as on a desk.
-      Six cabinets are warming up.
+      {floorIntro}
     </p>
 
     <div class="floor__grid">
@@ -196,3 +207,28 @@ const daily = floorGames.find((g) => g.meta.daily);
     grid-column: span 2;
   }
 </style>
+
+<script>
+  // Fill the daily panel with the live puzzle number and the viewer's streak.
+  // Only tiny pure modules are imported here — never the word data — so the
+  // homepage JS budget stays small.
+  import { RUNGS_EPOCH } from '../config/site';
+  import { dayIndex, sgDayNumber } from '../games/rungs/daily';
+  import { createSave } from '../services/save';
+  import { EMPTY_STATS, currentStreak, solvedToday, type Stats } from '../games/rungs/streaks';
+
+  const panel = document.querySelector('[data-daily-panel]');
+  if (panel) {
+    const now = Date.now();
+    const number = dayIndex(now, RUNGS_EPOCH) + 1;
+    const today = sgDayNumber(now);
+    const stats = createSave('rungs').get<Stats>('stats', EMPTY_STATS);
+
+    const numEl = panel.querySelector('[data-rungs-number]');
+    if (numEl) numEl.textContent = `Rungs #${number}`;
+    const streakEl = panel.querySelector('[data-rungs-streak]');
+    if (streakEl) streakEl.textContent = String(currentStreak(stats, today));
+    const cta = panel.querySelector('[data-rungs-cta]');
+    if (cta && solvedToday(stats, today)) cta.textContent = "See today's result";
+  }
+</script>

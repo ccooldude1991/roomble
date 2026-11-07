@@ -82,7 +82,9 @@ const more = floorGames.filter((g) => g.meta.slug !== meta.slug).slice(0, 3);
 <style>
   .game {
     display: grid;
-    grid-template-columns: 1fr;
+    /* minmax(0, …) lets the column shrink below the cabinet's intrinsic width so a
+       portrait screen never forces the grid wider than the page on narrow phones. */
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--sp-5);
     padding-top: var(--sp-5);
   }

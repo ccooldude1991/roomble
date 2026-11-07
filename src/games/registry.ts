@@ -133,8 +133,9 @@ export const games: GameEntry[] = [
   },
   {
     color: 'ticket',
-    status: 'coming-soon',
+    status: 'playable',
     aspect: '3 / 4',
+    load: () => import('./rungs'),
     meta: {
       slug: 'rungs',
       title: 'Rungs',
@@ -142,12 +143,12 @@ export const games: GameEntry[] = [
       description:
         'Climb from a start word to an end word, changing one letter at a time, every step a real word. One puzzle a day, the same for everyone. Beat par, hold your streak, and share the shape of your climb.',
       howToPlay: [
-        'Start from the given word.',
-        'Change one letter to make a new real word.',
-        'Reach the end word in as few steps as you can.',
+        'Start from the word at the bottom.',
+        'Change one letter to make a new real word — every rung must be a word.',
+        'Reach the goal word at the top in as few steps as you can.',
       ],
       controls: {
-        desktop: ['Type letters', 'Enter to submit a word', 'Backspace to edit'],
+        desktop: ['Type letters', 'Enter to submit a word', 'Backspace to edit, Esc for the menu'],
         mobile: ['Use the on-screen keyboard', 'Tap enter to submit'],
       },
       orientation: 'any',

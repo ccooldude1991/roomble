@@ -150,7 +150,9 @@ const portrait = (aw ?? 1) < (ah ?? 1);
   /* Portrait games: size the screen by height so the full well fits the viewport,
      and centre the (narrower) cabinet rather than stretching it wide. */
   .host[data-portrait] .host__cabinet {
-    max-width: 440px;
+    /* A definite width (not just max-width) so the height-driven screen inside
+       can't stretch the cabinet past the page column and clip on narrow phones. */
+    width: min(100%, 440px);
     margin-inline: auto;
   }
   .host[data-portrait] .host__screen {
@@ -161,6 +163,8 @@ const portrait = (aw ?? 1) < (ah ?? 1);
   .host[data-portrait] .host__screen :global(.crt) {
     width: auto;
     height: 100%;
+    /* The cabinet now has a definite width, so 100% here is the real available
+       space — the height-driven width is clamped to it instead of overflowing. */
     max-width: 100%;
   }
 
