@@ -60,24 +60,26 @@ export const games: GameEntry[] = [
   },
   {
     color: 'marquee',
-    status: 'coming-soon',
+    status: 'playable',
     aspect: '16 / 9',
+    load: () => import('./rooftop-rush'),
     meta: {
       slug: 'rooftop-rush',
       title: 'Rooftop Rush',
       tagline: 'Sprint the neon rooftops. Jump the gaps, slide the signs.',
       description:
-        'A night-time rooftop sprint. Your courier runs on their own; you time the jumps over gaps and the slides under signs, chaining near-misses for bonus distance. Simple to start, hard to put down.',
+        'A courier sprints across a neon city at night, leaping gaps, sliding under signs and grabbing packages. One button to play, with near-miss bonuses that reward risky lines — clear an obstacle by a hair for slow-mo and a rising multiplier. Bank packages to unlock trail colours.',
       howToPlay: [
-        'Your runner moves on their own.',
-        'Jump over gaps and low obstacles.',
-        'Slide under high obstacles and grab packages.',
+        'You run automatically — keep going.',
+        'Jump over gaps and low obstacles (hold to jump higher, tap again to double-jump).',
+        'Slide under high signs. Clear things by a hair for a Close call bonus.',
       ],
       controls: {
-        desktop: ['Space, W or Up to jump', 'Down or S to slide'],
-        mobile: ['Tap to jump', 'Swipe down to slide'],
+        desktop: ['Space, Up or W to jump (hold for height)', 'Down or S to slide', 'P or Esc to pause'],
+        mobile: ['Tap the right side to jump (hold for height)', 'Tap the left side to slide'],
       },
-      orientation: 'landscape',
+      // 'any' so portrait phones play letterboxed rather than being forced to rotate.
+      orientation: 'any',
       category: 'arcade',
     },
   },

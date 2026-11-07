@@ -2,13 +2,40 @@
 
 ## Status
 
-**Phase 2a complete.** Stackdown — the first real game — is built in Phaser 3 to the spec and the
-CLAUDE.md quality bar, and is live on the homepage floor. Build, 26 unit tests and the Playwright
-e2e suite are green, no console errors. Not started: Phase 2b (Rooftop Rush).
+**Phase 2 complete (2a + 2b).** Both first games — Stackdown and Rooftop Rush — are built in Phaser 3
+to spec and live on the floor. Build, 39 unit tests and the Playwright e2e suite are green, no console
+errors. Next: the **Phase 2 checkpoint** — play both on phone and desktop and send feedback so shared
+lessons become rules in CLAUDE.md / DESIGN.md before the remaining four games.
 
 Earlier: Phase 0 (scaffold + deploy) and Phase 1 (design system + site shell) complete.
 
 ## Done
+
+### Phase 2b — Rooftop Rush (Phaser 3)
+- **Pure, tested logic** (`src/games/rooftop-rush/`): `config.ts` (shared physics constants),
+  `reach.ts` (jump-reach maths), `chunks.ts` (22 hand-authored ASCII chunks + tier stitcher +
+  a validator that guarantees no gap is unclearable at its tier), `scoring.ts`, `cosmetics.ts`
+  (coins banked via `ctx.save`, 6 unlockable trail colours), `ai.ts` (attract bot).
+- **13 unit tests**, including the required "chunk stitching never produces an impossible gap at any
+  speed tier" check (verifies the jump-reach math), plus scoring, cosmetics and bot decisions.
+- **Phaser scene**: one-button auto-runner with variable jump height, a mid-air double jump, slide
+  (cancellable into jump), coyote time (90ms) and jump buffering (100ms); speed ramps over the run.
+- **Original twist — near misses**: clearing an obstacle by a hair triggers a Close call — brief
+  slow-mo, a rising-pitch riser and a growing multiplier; a hit resets it.
+- **Collectibles / power-ups**: packages (score + banked coins) and Magnet / Glide / Shield.
+- **Visuals + juice**: 3 parallax city layers with lit windows, rooftops with a neon edge, a
+  code-drawn runner (run/jump/slide/tumble), trail in the equipped colour, dust on landing, speed
+  lines, camera zoom-out with speed, slow-mo flash, crash tumble + shake. Reduced-motion aware.
+- **Audio** (`sfx.ts`): footsteps, jump/double/land, slide, package chime, close-call riser
+  (played via the shared `audio.playPitched`), power-up, crash.
+- **Controls**: keyboard (Space/Up/W jump, hold for height; Down/S slide) and touch zones (right =
+  jump, left = slide) with a first-run hint; plays letterboxed in portrait (no forced rotation, with
+  a gentle "rotate for a bigger view" hint) per the spec.
+- **Shared-utility improvements** (reused by both games): added `audio.playPitched(preset, freq)` and
+  a reusable `SlowMo` helper in `src/juice`; Stackdown's combo sound now uses `playPitched` too.
+- Wired into the registry/floor as playable; **e2e** smoke tests for keyboard and touch.
+
+### Phase 2a — Stackdown (Phaser 3)
 
 ### Phase 2a — Stackdown (Phaser 3)
 - **Pure, tested logic** (engine-agnostic, in `src/games/stackdown/`): `pieces.ts` (7 tetrominoes,
@@ -93,8 +120,8 @@ Earlier: Phase 0 (scaffold + deploy) and Phase 1 (design system + site shell) co
 
 ## Known issues
 
-- The other five floor games are placeholders; their `/games/<slug>` pages show a "coming soon"
-  cabinet. Stackdown is fully playable.
+- The other four floor games (Starfuse, Brickquake, Rungs, Arcbolt) are placeholders; their
+  `/games/<slug>` pages show a "coming soon" cabinet. Stackdown and Rooftop Rush are fully playable.
 - Browser-pane automation can't deliver Phaser's keyboard events (no keyCode), so keyboard play was
   verified with Playwright (real key events) instead; real browsers are unaffected.
 - Preview clips don't exist yet (Phase 3), so tiles and the hero show a placeholder screen with the
@@ -106,6 +133,19 @@ Earlier: Phase 0 (scaffold + deploy) and Phase 1 (design system + site shell) co
 
 ## Next
 
-- **Phase 2b**: build Rooftop Rush per `specs/02-rooftop-rush.md`, reusing the shared juice/services.
-- Then the Phase 2 checkpoint: play Stackdown and Rooftop Rush on phone and desktop, then send
-  feedback so shared lessons can become rules in CLAUDE.md / DESIGN.md.
+- **Phase 2 checkpoint**: play Stackdown and Rooftop Rush on phone and desktop and send feedback.
+  Feedback that applies to all games should become rules in CLAUDE.md's quality checklist or
+  DESIGN.md before the remaining games.
+- Then **Phase 3**: Starfuse, Brickquake, Rungs, Arcbolt, and the live preview-capture script.
+
+## Decisions (Phase 2b)
+
+- **Deterministic fixed-step integrator instead of Arcade Physics bodies.** Rooftop Rush uses Phaser
+  3 for the scene/loop/input/rendering but integrates the runner's vertical motion and resolves
+  terrain/obstacle collisions manually. This keeps world scrolling and the close-call slow-mo exact
+  and frame-rate independent, and makes the gap-reachability guarantee testable. (Recorded per
+  CLAUDE.md's "make a sensible choice and record it".)
+- **Orientation 'any' for Rooftop** (though landscape-preferred) so portrait phones play letterboxed
+  with a gentle hint rather than being blocked by a forced-rotation prompt, as the spec requires.
+- **Cosmetics** are trail colours (6) that also tint the runner — cosmetic only, unlocked with banked
+  coins, stored via `ctx.save`. A full skin/shop screen can come later; this keeps the loop intact.

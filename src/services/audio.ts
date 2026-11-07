@@ -61,6 +61,13 @@ class Audio implements AudioService {
     }
   }
 
+  /** Play a preset with its frequency (ZzFX param index 2) overridden. */
+  playPitched(preset: AudioPreset, frequency: number): void {
+    const p = [...preset];
+    p[2] = frequency;
+    this.play(p);
+  }
+
   setMuted(muted: boolean): void {
     this.#muted = muted;
     appSave.set(MUTE_KEY, muted);

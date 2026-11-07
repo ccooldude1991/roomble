@@ -37,6 +37,8 @@ export type GameEvent =
 /** ZzFX-backed audio. Real implementation in src/services/audio.ts (Phase 1). */
 export interface AudioService {
   play(preset: unknown): void;
+  /** Play a preset with its frequency overridden (e.g. rising combo / near-miss pitch). */
+  playPitched(preset: unknown, frequency: number): void;
   setMuted(muted: boolean): void;
   isMuted(): boolean;
 }

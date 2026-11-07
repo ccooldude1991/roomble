@@ -7,15 +7,8 @@
 import Phaser from 'phaser';
 import type { GameContext } from '../types';
 import { Board, WIDTH, VISIBLE_TOP, VISIBLE_ROWS, HEIGHT } from './board';
-import {
-  SevenBag,
-  SPAWN,
-  PIECE_COLORS,
-  minos,
-  type PieceType,
-  type Matrix,
-} from './pieces';
-import { tryRotate, type Active, type RotState } from './srs';
+import { SevenBag, SPAWN, PIECE_COLORS, minos, type PieceType } from './pieces';
+import { tryRotate, type Active } from './srs';
 import {
   resolveClear,
   levelForLines,
@@ -455,9 +448,7 @@ export class StackdownScene extends Phaser.Scene {
     if (this.combo > 0) {
       this.comboText.setText(`COMBO x${this.combo}`);
       this.comboTimer = 0.9;
-      const p = [...SFX.combo];
-      p[2] = 440 + this.combo * 70;
-      this.play(p);
+      this.ctx?.audio.playPitched(SFX.combo, 440 + this.combo * 70);
     }
 
     if (!this.reduced) {
