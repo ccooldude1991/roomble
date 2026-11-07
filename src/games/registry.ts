@@ -85,22 +85,23 @@ export const games: GameEntry[] = [
   },
   {
     color: 'joystick',
-    status: 'coming-soon',
+    status: 'playable',
     aspect: '3 / 4',
+    load: () => import('./starfuse'),
     meta: {
       slug: 'starfuse',
       title: 'Starfuse',
       tagline: 'Slide and fuse matching bodies, from dust to rocks to stars.',
       description:
-        'Slide the whole board and fuse matching bodies into bigger ones — dust into rocks, rocks into moons, on toward a star and beyond. Every move counts and the next merge is always one slide away. Calm and quietly addictive.',
+        'Slide the whole board and fuse matching celestial bodies into bigger ones — dust into rocks, rocks into moons, on toward a star and beyond. Gravity wells appear every so often and pull matching neighbours together. Calm, satisfying and hard to put down.',
       howToPlay: [
         'Swipe or press a direction to slide every tile.',
-        'Two matching tiles that meet fuse into the next tier.',
-        'Keep fusing before the board fills up.',
+        'Two matching bodies that meet fuse into the next tier.',
+        'Keep fusing before the board fills up. One undo per game.',
       ],
       controls: {
-        desktop: ['Arrow keys to slide', 'R to restart'],
-        mobile: ['Swipe up, down, left or right to slide'],
+        desktop: ['Arrows or WASD to slide', 'U to undo, R to restart', 'P or Esc to pause'],
+        mobile: ['Swipe to slide', 'Undo and settings buttons above the board'],
       },
       orientation: 'portrait',
       category: 'puzzle',

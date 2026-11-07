@@ -2,14 +2,39 @@
 
 ## Status
 
-**Phase 2 complete (2a + 2b).** Both first games — Stackdown and Rooftop Rush — are built in Phaser 3
-to spec and live on the floor. Build, 39 unit tests and the Playwright e2e suite are green, no console
-errors. Next: the **Phase 2 checkpoint** — play both on phone and desktop and send feedback so shared
-lessons become rules in CLAUDE.md / DESIGN.md before the remaining four games.
+**Phase 3a complete.** Starfuse (the merge/slide puzzle) is built in plain TypeScript + Canvas 2D to
+spec and live on the floor. Build, 58 unit tests and the Playwright e2e suite are green, no console
+errors. Three games are now playable (Stackdown, Rooftop Rush, Starfuse). Next: Phase 3b (Brickquake).
 
-Earlier: Phase 0 (scaffold + deploy) and Phase 1 (design system + site shell) complete.
+> Note: no Phase 2 checkpoint feedback was received, so no new global rules were added to CLAUDE.md /
+> DESIGN.md before Starfuse. That feedback loop can still happen any time.
+
+Earlier: Phase 0 (scaffold + deploy), Phase 1 (design system + site shell), Phase 2 (Stackdown,
+Rooftop Rush) complete.
 
 ## Done
+
+### Phase 3a — Starfuse (Canvas 2D, no engine)
+- **Pure, tested logic** (`src/games/starfuse/`): `board.ts` (slide/merge in four directions with no
+  double-merge, spawn 90%/10%, move/game-over detection, plus a traced slide for animation),
+  `scoring.ts` (2^tier per fusion + chain bonus), `wells.ts` (the gravity-well twist), `ai.ts`
+  (attract bot that keeps the biggest tile in a corner), `tiers.ts` (the 13-tier ladder + the
+  code that draws each celestial body).
+- **19 unit tests**, including the required rules — no tile merges twice in one move, spawn logic,
+  and a consistency check that the traced slide matches `slide()` across random boards.
+- **Canvas game** (`game.ts`): slide animation (ease-out 120ms), fusion squash-and-stretch pop with
+  a particle ring, drifting starfield behind the CRT, a discovery spotlight ("First Moon"), and a
+  gentle board shake + screen flare at Sun and above. Reuses the shared juice (Particles, Shaker,
+  easings) and services (`ctx.audio` incl. `playPitched`, `ctx.save`).
+- **The twist — gravity wells**: every 25 moves a tile becomes a telegraphed well for 3 moves; on
+  expiry it pulls matching orthogonal neighbours in, chaining upward. Toggleable (classic mode).
+- **Extras**: one undo per game, a discovered-tiers collection strip, best-tile stat, and a settings
+  overlay (wells on/off, and 5×5 "big sky" which unlocks after reaching a Sun). Pentatonic fusion
+  tones so chains sound musical; new-discovery chime; game-over hum.
+- **Controls**: arrows/WASD (U undo, R restart-with-confirm) and swipe (threshold 30px); undo and
+  settings buttons above the board. Wired into the registry/floor; **e2e** for keyboard and swipe.
+
+### Phase 2b — Rooftop Rush (Phaser 3)
 
 ### Phase 2b — Rooftop Rush (Phaser 3)
 - **Pure, tested logic** (`src/games/rooftop-rush/`): `config.ts` (shared physics constants),
@@ -120,8 +145,8 @@ Earlier: Phase 0 (scaffold + deploy) and Phase 1 (design system + site shell) co
 
 ## Known issues
 
-- The other four floor games (Starfuse, Brickquake, Rungs, Arcbolt) are placeholders; their
-  `/games/<slug>` pages show a "coming soon" cabinet. Stackdown and Rooftop Rush are fully playable.
+- Brickquake, Rungs and Arcbolt are still placeholders ("coming soon" cabinets); Stackdown, Rooftop
+  Rush and Starfuse are fully playable.
 - Browser-pane automation can't deliver Phaser's keyboard events (no keyCode), so keyboard play was
   verified with Playwright (real key events) instead; real browsers are unaffected.
 - Preview clips don't exist yet (Phase 3), so tiles and the hero show a placeholder screen with the
@@ -133,10 +158,10 @@ Earlier: Phase 0 (scaffold + deploy) and Phase 1 (design system + site shell) co
 
 ## Next
 
-- **Phase 2 checkpoint**: play Stackdown and Rooftop Rush on phone and desktop and send feedback.
-  Feedback that applies to all games should become rules in CLAUDE.md's quality checklist or
-  DESIGN.md before the remaining games.
-- Then **Phase 3**: Starfuse, Brickquake, Rungs, Arcbolt, and the live preview-capture script.
+- **Phase 3b**: Brickquake (`specs/04-brickquake.md`).
+- Then Phase 3c Rungs (+ daily generator + homepage daily panel), 3d Arcbolt, 3e the
+  preview-capture script.
+- The Phase 2 checkpoint (play-and-feedback) is still open and can run whenever the owner wants.
 
 ## Decisions (Phase 2b)
 
