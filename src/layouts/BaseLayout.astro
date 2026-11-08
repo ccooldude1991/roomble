@@ -17,14 +17,22 @@ import '../design/global.css';
 interface Props {
   title?: string;
   description?: string;
+  /** Absolute URL of a social share image (1200×630), e.g. a game's OG card. */
+  image?: string;
   /** Hide the global header/footer (e.g. for a focused game page if ever needed). */
   bare?: boolean;
 }
 
-const { title, description = SITE_TAGLINE, bare = false } = Astro.props;
+const { title, description = SITE_TAGLINE, image, bare = false } = Astro.props;
 const pageTitle = title ? `${title} — ${SITE_NAME}` : `${SITE_NAME} — ${SITE_TAGLINE}`;
 const base = import.meta.env.BASE_URL;
 const href = (p: string) => `${base}${p.replace(/^\//, '')}`;
+
+// Canonical + social URLs resolve against the configured site (set by the deploy
+// workflow). Falls back to the page URL locally where Astro.site is the dev origin.
+const canonical = Astro.site
+  ? new URL(Astro.url.pathname, Astro.site).href
+  : Astro.url.href;
 ---
 
 <!doctype html>
@@ -36,6 +44,21 @@ const href = (p: string) => `${base}${p.replace(/^\//, '')}`;
     <meta name="description" content={description} />
     <meta name="theme-color" content="#1e1033" />
     <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {image && <meta property="og:image" content={image} />}
+    {image && <meta property="og:image:width" content="1200" />}
+    {image && <meta property="og:image:height" content="630" />}
+
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    {image && <meta name="twitter:image" content={image} />}
   </head>
   <body>
     {

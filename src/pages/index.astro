@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Cabinet from '../design/Cabinet.astro';
 import GameTile from '../design/GameTile.astro';
+import GamePreview from '../design/GamePreview.astro';
 import ArcadeButton from '../design/ArcadeButton.astro';
 import AdSlot from '../design/AdSlot.astro';
 import { floorGames } from '../games/registry';
@@ -27,10 +28,12 @@ const floorIntro =
   <section class="hero container">
     <div class="hero__cabinet">
       <Cabinet title={featured.meta.title} color={featured.color} as="h1" aspect="16 / 10">
-        <div class="hero__screen">
-          <p class="hero__pitch">{featured.meta.tagline}</p>
-          <p class="hero__note">Live gameplay previews land soon. For now, pick a cabinet.</p>
-        </div>
+        <GamePreview slug={featured.meta.slug} title={featured.meta.title}>
+          <div class="hero__screen">
+            <p class="hero__pitch">{featured.meta.tagline}</p>
+            <p class="hero__note">Pick a cabinet and play.</p>
+          </div>
+        </GamePreview>
         <Fragment slot="controls">
           <ArcadeButton variant="primary" size="lg" icon="play" href={href(`games/${featured.meta.slug}`)}>
             Play {featured.meta.title}

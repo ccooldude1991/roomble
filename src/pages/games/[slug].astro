@@ -4,6 +4,7 @@ import GameHost from '../../shell/GameHost.astro';
 import GameTile from '../../design/GameTile.astro';
 import AdSlot from '../../design/AdSlot.astro';
 import { games, floorGames, getEntry } from '../../games/registry';
+import previews from '../../previews.manifest.json';
 
 export function getStaticPaths() {
   return games.map((g) => ({ params: { slug: g.meta.slug } }));
@@ -15,9 +16,17 @@ const { meta, color } = entry;
 const playable = entry.status === 'playable';
 
 const more = floorGames.filter((g) => g.meta.slug !== meta.slug).slice(0, 3);
+
+// Per-game Open Graph share image, if it has been captured (npm run capture).
+const base = import.meta.env.BASE_URL;
+const hasOg = !!(previews as Record<string, { og?: boolean }>)[meta.slug]?.og;
+const ogImage =
+  hasOg && Astro.site
+    ? new URL(`${base}previews/${meta.slug}.og.png`, Astro.site).href
+    : undefined;
 ---
 
-<BaseLayout title={meta.title} description={meta.description}>
+<BaseLayout title={meta.title} description={meta.description} image={ogImage}>
   <div class="game container">
     <div class="game__stage">
       <GameHost meta={meta} color={color} playable={playable} aspect={entry.aspect} />

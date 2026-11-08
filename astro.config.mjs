@@ -18,6 +18,9 @@ export default defineConfig({
   base,
   output: 'static',
   trailingSlash: 'ignore',
+  // The dev toolbar sits bottom-centre and would otherwise appear in captured
+  // preview/share frames, which run against `astro dev`. Off only during capture.
+  devToolbar: { enabled: process.env.CAPTURE !== '1' },
   build: {
     // Emit /about/index.html etc. so routes work cleanly on static hosting.
     format: 'directory',

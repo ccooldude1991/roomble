@@ -1,0 +1,50 @@
+{
+  "arcbolt": {
+    "webm": true,
+    "mp4": true,
+    "poster": true,
+    "og": true,
+    "w": 640,
+    "h": 360
+  },
+  "brickquake": {
+    "webm": true,
+    "mp4": true,
+    "poster": true,
+    "og": true,
+    "w": 400,
+    "h": 640
+  },
+  "rooftop-rush": {
+    "webm": true,
+    "mp4": true,
+    "poster": true,
+    "og": true,
+    "w": 640,
+    "h": 360
+  },
+  "rungs": {
+    "webm": true,
+    "mp4": true,
+    "poster": true,
+    "og": true,
+    "w": 480,
+    "h": 640
+  },
+  "stackdown": {
+    "webm": true,
+    "mp4": true,
+    "poster": true,
+    "og": true,
+    "w": 360,
+    "h": 640
+  },
+  "starfuse": {
+    "webm": true,
+    "mp4": true,
+    "poster": true,
+    "og": true,
+    "w": 480,
+    "h": 640
+  }
+}

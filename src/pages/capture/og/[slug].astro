@@ -1,0 +1,157 @@
+---
+/*
+ * Capture harness — DEV-ONLY, never shipped. The branded 1200×630 Open Graph share
+ * image per game: site wordmark + marquee title + tagline on the left, the game's
+ * live attract() screen framed on the right. Captured by scripts/capture-previews.ts.
+ *
+ * getStaticPaths returns nothing unless CAPTURE=1, so a normal `npm run build`
+ * emits none of these routes.
+ */
+import { floorGames, getEntry } from '../../../games/registry';
+import Marquee from '../../../design/Marquee.astro';
+import CrtScreen from '../../../design/CrtScreen.astro';
+import { SITE_NAME } from '../../../config/site';
+import { fit } from '../_capture';
+import '../../../design/tokens.css';
+import '@fontsource/bungee/400.css';
+import '@fontsource/chakra-petch/500.css';
+import '@fontsource/chakra-petch/600.css';
+import '@fontsource/vt323/400.css';
+
+export function getStaticPaths() {
+  if (process.env.CAPTURE !== '1') return [];
+  return floorGames.map((g) => ({ params: { slug: g.meta.slug } }));
+}
+
+const { slug } = Astro.params;
+const entry = getEntry(slug!)!;
+const aspect = entry.aspect ?? '16 / 9';
+const ogStage = fit(aspect, 560, 540);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>og: {slug}</title>
+  </head>
+  <body data-slug={slug}>
+    <div class="og">
+      <div class="og__left">
+        <div class="og__brand">{SITE_NAME}</div>
+        <Marquee text={entry.meta.title} color={entry.color} size="md" as="div" />
+        <p class="og__tag">{entry.meta.tagline}</p>
+        <div class="og__cta">Free in your browser — no download</div>
+      </div>
+      <div class="og__right">
+        <div class="og__screen" style={`width:${ogStage.w}px`}>
+          <CrtScreen aspect={aspect} class="og__crt">
+            <div id="stage" />
+          </CrtScreen>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      import { getEntry } from '../../../games/registry';
+
+      const slug = document.body.dataset.slug;
+      const el = document.getElementById('stage');
+      const w = window as unknown as { __captureReady?: boolean; __captureError?: string };
+
+      async function run() {
+        if (!slug || !el) return;
+        const entry = getEntry(slug);
+        if (!entry?.load) {
+          w.__captureError = `no loader for ${slug}`;
+          return;
+        }
+        try {
+          const mod = await entry.load();
+          const game = 'default' in mod ? mod.default : mod;
+          if (!game.attract) {
+            w.__captureError = `${slug} has no attract() mode`;
+            return;
+          }
+          await game.attract(el);
+          w.__captureReady = true;
+        } catch (err) {
+          w.__captureError = String(err);
+          // eslint-disable-next-line no-console
+          console.error('[capture] attract failed', err);
+        }
+      }
+      void run();
+    </script>
+
+    <style>
+      :global(html),
+      :global(body) {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .og {
+        width: 1200px;
+        height: 630px;
+        display: flex;
+        align-items: center;
+        gap: 48px;
+        padding: 56px;
+        box-sizing: border-box;
+        background:
+          radial-gradient(120% 90% at 85% 50%, rgba(77, 240, 208, 0.12), transparent 60%),
+          var(--cabinet);
+        color: var(--ticket);
+        font-family: var(--font-ui);
+      }
+      .og__left {
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 22px;
+      }
+      .og__brand {
+        font-family: var(--font-display);
+        font-size: 26px;
+        letter-spacing: 0.04em;
+        color: var(--marquee);
+        text-shadow: 0 0 18px rgba(255, 194, 26, 0.5);
+      }
+      .og :global(.marquee__label) {
+        font-size: 58px;
+        line-height: 1.02;
+      }
+      .og__tag {
+        margin: 0;
+        font-size: 26px;
+        line-height: 1.35;
+        color: var(--ticket-dim);
+        max-width: 22ch;
+      }
+      .og__cta {
+        margin-top: 6px;
+        font-family: var(--font-hud);
+        font-size: 28px;
+        color: var(--phosphor);
+        text-shadow: 0 0 16px rgba(77, 240, 208, 0.45);
+      }
+      .og__right {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .og__screen {
+        border: 10px solid var(--bezel);
+        border-radius: 18px;
+        box-shadow:
+          0 0 0 2px rgba(0, 0, 0, 0.6),
+          0 24px 60px rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  </body>
+</html>

@@ -2,18 +2,38 @@
 
 ## Status
 
-**Phase 3d complete.** Arcbolt (the twin-stick arena shooter) is built in Phaser 3 to spec and live
-on the floor. Build, 157 unit tests and the Playwright e2e suite are green, no console errors. **All
-six games are now playable** (Stackdown, Rooftop Rush, Starfuse, Brickquake, Rungs, Arcbolt); every
-cabinet on the floor is lit. Next: Phase 3e (the preview-capture script).
+**Phase 3e complete.** `npm run capture` records every game's `attract()` self-play into a short
+looping clip, a poster frame and a branded Open Graph share image, and the homepage hero + floor
+cabinets now show the live loops (the tagline placeholders are the fallback). Build, 157 unit tests
+and the Playwright e2e suite are green, no console errors. **All six games are playable** and the
+floor is now showing real gameplay. Next: the Phase 2 play-and-feedback checkpoint, or Phase 4 (ads).
 
 > Note: the Phase 2 checkpoint (play-and-feedback) is still open; no new global rules have been added
 > to CLAUDE.md / DESIGN.md yet.
 
 Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse), Phase 3b
-(Brickquake), Phase 3c (Rungs) complete.
+(Brickquake), Phase 3c (Rungs), Phase 3d (Arcbolt) complete.
 
 ## Done
+
+### Phase 3e — gameplay previews + share images (`npm run capture`)
+- **Capture script** (`scripts/capture-previews.ts`, run with `npm run capture`): starts `astro dev`
+  with `CAPTURE=1`, drives a dev-only harness with Playwright, runs each game's own `attract()`
+  self-play, and writes per game into `public/previews/`:
+  - `<slug>.webm` (+ `<slug>.mp4` when ffmpeg is present) — a short looping gameplay clip
+  - `<slug>.jpg` — a poster frame (also the reduced-motion still)
+  - `<slug>.og.png` — a branded 1200×630 Open Graph share image (wordmark + marquee + framed screen)
+  - records what exists in `src/previews.manifest.json`. Takes optional slug args to capture one game.
+- **Dev-only harness** (`src/pages/capture/[slug].astro`, `capture/og/[slug].astro`, `_capture.ts`):
+  `getStaticPaths` returns nothing unless `CAPTURE=1`, so a normal `npm run build` emits none of these
+  routes (verified: `dist/` has no `/capture`). The Astro dev toolbar is disabled during capture so it
+  never bleeds into a frame.
+- **`<GamePreview>` component**: a looping `<video>` over a poster. `preload="none"` + `data-src`
+  sources mean nothing downloads until the clip nears the viewport (one shared IntersectionObserver
+  hydrates + plays it, pauses it off-screen). `prefers-reduced-motion`: the clip never loads, the
+  static poster shows instead. Falls back to the tagline placeholder when a game has no capture yet.
+- **Wired in**: homepage hero (featured game) and every floor + "more games" tile. Game pages emit
+  per-game Open Graph / Twitter card meta (`og:image` → the share image) via `BaseLayout`.
 
 ### Phase 3d — Arcbolt (Phaser 3 twin-stick shooter)
 - **Pure, tested logic** (`src/games/arcbolt/`): `geometry.ts` (vector maths + projectile lead),
@@ -242,10 +262,30 @@ Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse
 
 ## Next
 
-- **Phase 3e**: the preview-capture script (`npm run capture`) that records each game's `attract()`
-  demo into short WebM/MP4 loops + posters for the tiles and hero (replacing the tagline placeholders).
-- All six games are built; after 3e the collection is content-complete through Phase 3.
+- The collection is content-complete through Phase 3: six games, all with live previews and share
+  images. Re-run `npm run capture` whenever a game's look changes to refresh its clips.
 - The Phase 2 checkpoint (play-and-feedback) is still open and can run whenever the owner wants.
+- **Phase 4**: turn ads on (the `<AdSlot>` + ad-service plumbing already exists; needs a publisher ID,
+  a consent CMP, and `ads.txt`).
+
+## Decisions (Phase 3e — previews)
+
+- **Previews are committed assets, generated offline.** Like the Rungs word data, `npm run capture`
+  is run by hand (not part of `npm run build`), and its output in `public/previews/` + the manifest in
+  `src/previews.manifest.json` are committed, so the deploy build needs no browser/ffmpeg and ships the
+  clips as-is.
+- **ffmpeg is optional.** With it, clips are trimmed past the boot frames to a clean ~7s loop and an
+  `.mp4` (H.264) is produced for broad support (incl. iOS Safari); without it the raw WebM is kept and
+  the manifest records `mp4: false`. The site plays whichever sources exist.
+- **"Seamless" loop is best-effort.** Attract modes aren't strictly periodic, so the clip is a trimmed
+  continuous window played on `loop`; there can be a small jump at the wrap. Good enough for an ambient
+  cabinet screen; a true crossfade would need a heavier ffmpeg pass.
+- **Clips are throttled for performance.** Longest edge capped at 640px, `preload="none"`, lazy-loaded
+  and only playing while on-screen — so a floor full of cabinets never loads a wall of video, keeping
+  the homepage JS/network budget intact.
+- **OG image is a separate route, not a `?mode=og` query.** Astro's dev server didn't honour the query
+  param when rendering the prerendered capture route, so the share composition lives at its own
+  `capture/og/[slug]` route.
 
 ## Decisions (Phase 3d — Arcbolt)
 

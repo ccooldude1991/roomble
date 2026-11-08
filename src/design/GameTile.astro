@@ -7,6 +7,7 @@
  */
 import Marquee from './Marquee.astro';
 import CrtScreen from './CrtScreen.astro';
+import GamePreview from './GamePreview.astro';
 import ScoreReadout from './ScoreReadout.astro';
 
 type MarqueeColor = 'marquee' | 'phosphor' | 'joystick' | 'ticket';
@@ -48,10 +49,12 @@ const href = `${import.meta.env.BASE_URL}games/${slug}`;
   </div>
 
   <CrtScreen aspect={featured ? '16 / 10' : '4 / 3'} class="tile__screen">
-    <div class="tile__preview">
-      <p class="tile__tagline">{tagline}</p>
-      {comingSoon && <span class="tile__soon">Coming soon</span>}
-    </div>
+    <GamePreview slug={slug} title={title}>
+      <div class="tile__preview">
+        <p class="tile__tagline">{tagline}</p>
+        {comingSoon && <span class="tile__soon">Coming soon</span>}
+      </div>
+    </GamePreview>
   </CrtScreen>
 
   <div class="tile__panel">

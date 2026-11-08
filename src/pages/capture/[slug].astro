@@ -1,0 +1,104 @@
+---
+/*
+ * Capture harness — DEV-ONLY, never shipped.
+ *
+ * `scripts/capture-previews.ts` drives these pages with Playwright to record each
+ * game's attract() loop and grab a poster frame. The branded Open Graph share image
+ * is a separate route (capture/og/[slug].astro).
+ *
+ * getStaticPaths returns nothing unless CAPTURE=1, so a normal `npm run build`
+ * emits none of these routes. The capture script runs `astro dev` with CAPTURE=1.
+ *
+ * Routes (only when CAPTURE=1):
+ *   /capture/__list   → JSON list of games + capture dimensions (the script reads this)
+ *   /capture/<slug>   → the game's attract() filling a fixed w×h stage (loop + poster)
+ */
+import { floorGames, getEntry } from '../../games/registry';
+import { captureSize, LIST_SLUG } from './_capture';
+
+export function getStaticPaths() {
+  if (process.env.CAPTURE !== '1') return [];
+  return [
+    { params: { slug: LIST_SLUG } },
+    ...floorGames.map((g) => ({ params: { slug: g.meta.slug } })),
+  ];
+}
+
+const { slug } = Astro.params;
+const isList = slug === LIST_SLUG;
+
+const list = floorGames.map((g) => {
+  const { w, h } = captureSize(g.aspect ?? '16 / 9');
+  return { slug: g.meta.slug, w, h, aspect: g.aspect ?? '16 / 9' };
+});
+
+const entry = isList ? undefined : getEntry(slug!);
+const aspect = entry?.aspect ?? '16 / 9';
+const size = captureSize(aspect);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>capture: {slug}</title>
+  </head>
+  <body data-slug={isList ? '' : slug}>
+    {
+      isList ? (
+        <script id="games" type="application/json" set:html={JSON.stringify(list)} />
+      ) : (
+        <div id="stage" class="stage" style={`width:${size.w}px;height:${size.h}px`} />
+      )
+    }
+
+    <script>
+      import { getEntry } from '../../games/registry';
+
+      const slug = document.body.dataset.slug;
+      const el = document.getElementById('stage');
+      const w = window as unknown as { __captureReady?: boolean; __captureError?: string };
+
+      async function run() {
+        if (!slug || !el) return; // the __list route has neither
+        const entry = getEntry(slug);
+        if (!entry?.load) {
+          w.__captureError = `no loader for ${slug}`;
+          return;
+        }
+        try {
+          const mod = await entry.load();
+          const game = 'default' in mod ? mod.default : mod;
+          if (!game.attract) {
+            w.__captureError = `${slug} has no attract() mode`;
+            return;
+          }
+          await game.attract(el);
+          w.__captureReady = true;
+        } catch (err) {
+          w.__captureError = String(err);
+          // eslint-disable-next-line no-console
+          console.error('[capture] attract failed', err);
+        }
+      }
+      void run();
+    </script>
+
+    <style>
+      :global(html),
+      :global(body) {
+        margin: 0;
+        padding: 0;
+        background: #050208;
+        overflow: hidden;
+      }
+      .stage {
+        position: absolute;
+        inset: 0 auto auto 0;
+        overflow: hidden;
+        background: #050208;
+      }
+    </style>
+  </body>
+</html>
