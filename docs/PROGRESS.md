@@ -2,19 +2,43 @@
 
 ## Status
 
-**Phase 3c complete.** Rungs (the daily word ladder) is built in plain TS + DOM/CSS to spec and live
-on the floor, with the build-time puzzle generator and the homepage daily panel wired to the live
-puzzle number and streak. Build, 115 unit tests and the Playwright e2e suite are green, no console
-errors. Five games are now playable (Stackdown, Rooftop Rush, Starfuse, Brickquake, Rungs); only
-Arcbolt is still coming soon. Next: Phase 3d (Arcbolt).
+**Phase 3d complete.** Arcbolt (the twin-stick arena shooter) is built in Phaser 3 to spec and live
+on the floor. Build, 157 unit tests and the Playwright e2e suite are green, no console errors. **All
+six games are now playable** (Stackdown, Rooftop Rush, Starfuse, Brickquake, Rungs, Arcbolt); every
+cabinet on the floor is lit. Next: Phase 3e (the preview-capture script).
 
 > Note: the Phase 2 checkpoint (play-and-feedback) is still open; no new global rules have been added
 > to CLAUDE.md / DESIGN.md yet.
 
 Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse), Phase 3b
-(Brickquake) complete.
+(Brickquake), Phase 3c (Rungs) complete.
 
 ## Done
+
+### Phase 3d — Arcbolt (Phaser 3 twin-stick shooter)
+- **Pure, tested logic** (`src/games/arcbolt/`): `geometry.ts` (vector maths + projectile lead),
+  `enemies.ts` (type stats + elite scaling), `waves.ts` (deterministic wave composition, boss every
+  10th wave, budget/elite ramps), `upgrades.ts` (11-upgrade catalog, build derivation, pick-1-of-3),
+  `scoring.ts` (kill multiplier rise/drop, wave bonus, accuracy), `ai.ts` (attract kite + targeting),
+  `pool.ts` (fixed-capacity object pool).
+- **42 unit tests** covering the spec: wave schedule + budget, upgrade stacking/derivation/offers,
+  the kill multiplier, geometry/lead, and a pool test proving no object growth across repeated
+  spawn/free cycles.
+- **Phaser scene** (`scene.ts`): free movement in a camera-followed arena larger than the screen;
+  independent aim + fire; dash with i-frames and an afterimage trail. Six enemy types with distinct
+  behaviours (drifter, darter with telegraph, splitter, orbiter that leads shots, front-shielded
+  shielder, drifter-spawner) plus elites and a boss every 10th wave. Between waves: three upgrade
+  cards (flip-in), applied to a build shown as a HUD strip. Neon vector rendering into one world
+  Graphics; explosion shock-rings warp the grid; screen shake, hit-stop on elite/boss kills, slow-mo
+  on the last kill of a wave, muzzle flashes, line-segment death bursts, low-hull warning, pickups +
+  magnet, chain lightning, drones, homing/pierce/ricochet bullets.
+- **Entities are pooled** (bullets 400, enemies 200, particles 500/220, enemy bullets 240, pickups
+  60) — counts never grow (unit- and e2e-verified). Particle cap drops on touch/reduced-motion.
+- **Controls**: WASD/arrows + mouse-aim + hold/auto-fire (F) + Space/Shift dash on desktop; gamepad
+  (left stick move, right stick aim+fire, RB dash); **floating twin-stick touch** (left thumb moves,
+  right thumb aims + auto-fires, dash button by the right stick), drawn as translucent arcade sticks.
+- **3 e2e tests**: keyboard clear + score climb, twin-stick touch on a touch-emulated landscape
+  phone, and a pool-stability check (active counts never exceed fixed capacities).
 
 ### Phase 3c — Rungs (daily word ladder) + generator + daily panel
 - **Offline generator** (`scripts/build-rungs.ts`, run with `npm run build:rungs`): downloads and
@@ -188,10 +212,9 @@ Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse
   in-game title/how-to. Restart is a destroy + remount (no page reload).
 - **Game-page UI is one component** (`GameHost.astro`) wired by a client script that pulls the lazy
   loader from the registry by slug — so only the opened game's bundle loads.
-- **Registry** (`src/games/registry.ts`) is the single source for the floor and game pages. Five
-  games are playable (Stackdown, Rooftop Rush, Starfuse, Brickquake, Rungs); Arcbolt is still a
-  `coming-soon` placeholder with full meta taken from `specs/`; `cabinet-test` is a hidden, playable
-  shell-verification game.
+- **Registry** (`src/games/registry.ts`) is the single source for the floor and game pages. All six
+  games are playable (Stackdown, Rooftop Rush, Starfuse, Brickquake, Rungs, Arcbolt); `cabinet-test`
+  is a hidden, playable shell-verification game.
 - **Audio context is created lazily** on the first user gesture (not at import), avoiding the browser
   autoplay-warning and keeping the "no console warnings" bar.
 - **Fonts self-hosted via @fontsource** rather than Google Fonts links — faster, no third-party
@@ -204,10 +227,12 @@ Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse
 
 ## Known issues
 
-- Arcbolt is the only remaining placeholder ("coming soon" cabinet); Stackdown, Rooftop Rush,
-  Starfuse, Brickquake and Rungs are fully playable.
-- Browser-pane automation can't deliver Phaser's keyboard events (no keyCode), so keyboard play was
-  verified with Playwright (real key events) instead; real browsers are unaffected.
+- All six games are now playable; there are no "coming soon" cabinets left on the floor.
+- Browser-pane automation can't deliver Phaser's keyboard events (no keyCode) and auto-pauses on
+  blur, so keyboard and twin-stick play were verified with Playwright (real events) instead; real
+  browsers are unaffected.
+- Arcbolt tuning is a first pass: standing still gets you swarmed quickly (as intended — you must
+  move and dash), but the exact wave/elite ramp and hull economy are worth a play-test pass.
 - Preview clips don't exist yet (Phase 3), so tiles and the hero show a placeholder screen with the
   game's tagline instead of live gameplay.
 - `/privacy` and `/terms` are honest **drafts** and carry a visible "Draft for review" banner — the
@@ -217,9 +242,27 @@ Earlier: Phase 0, Phase 1, Phase 2 (Stackdown, Rooftop Rush), Phase 3a (Starfuse
 
 ## Next
 
-- **Phase 3d**: Arcbolt (`specs/06-arcbolt.md`) — the twin-stick arena shooter.
-- Then Phase 3e, the preview-capture script (`npm run capture`) for live gameplay thumbnails.
+- **Phase 3e**: the preview-capture script (`npm run capture`) that records each game's `attract()`
+  demo into short WebM/MP4 loops + posters for the tiles and hero (replacing the tagline placeholders).
+- All six games are built; after 3e the collection is content-complete through Phase 3.
 - The Phase 2 checkpoint (play-and-feedback) is still open and can run whenever the owner wants.
+
+## Decisions (Phase 3d — Arcbolt)
+
+- **Logical entities in fixed pools, immediate-mode vector rendering.** Bullets/enemies/particles are
+  plain objects reused from fixed-capacity pools (never allocated mid-run), and every frame is redrawn
+  as vector lines into one Phaser Graphics. This meets the pool/perf Done-when and keeps the neon look
+  cheap without a sprite per entity.
+- **Grid "warp" is expanding shock-rings, not a spring mesh.** A true per-vertex mesh warp is costly
+  on mobile; brightening rings that expand from each explosion read as a warp and stay cheap. (Per
+  CLAUDE.md "make a sensible choice and record it.")
+- **Touch gate = coarse-pointer OR a genuine touch event**, so phones use the twin-stick while a
+  hybrid laptop still gets mouse-aim; a test-only `__arcboltForceTouch` flag exercises the stick path.
+- **Playwright phone projects now set `hasTouch: true`** (real touch emulation, as the Done-when
+  asks). A side effect: landscape games correctly show the rotate prompt on a portrait phone, so
+  Arcbolt's touch test runs at a landscape phone size. Portrait games are unaffected.
+- **Rewarded-revive / interstitial ad hooks are not wired yet** — ads stay globally off until the
+  owner enables them (per the ads phase), so these are deferred with the rest of the ad integration.
 
 ## Decisions (Phase 3c — Rungs)
 

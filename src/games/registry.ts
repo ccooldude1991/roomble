@@ -158,8 +158,9 @@ export const games: GameEntry[] = [
   },
   {
     color: 'phosphor',
-    status: 'coming-soon',
+    status: 'playable',
     aspect: '16 / 9',
+    load: () => import('./arcbolt'),
     meta: {
       slug: 'arcbolt',
       title: 'Arcbolt',
@@ -168,12 +169,12 @@ export const games: GameEntry[] = [
         'A twin-stick arena shooter in glowing vector style. Move and aim independently, survive waves of geometric enemies, and pick an upgrade after each one to build a ship that turns the arena into a light show.',
       howToPlay: [
         'Move around the bounded arena.',
-        'Aim and fire independently.',
+        'Aim and fire independently; dash to escape.',
         'Clear each wave, then choose one of three upgrades.',
       ],
       controls: {
-        desktop: ['WASD to move', 'Mouse to aim, click or hold to fire'],
-        mobile: ['Left stick to move', 'Right stick to aim and fire'],
+        desktop: ['WASD or arrows to move', 'Mouse to aim; hold click or F to auto-fire', 'Space / Shift to dash, P or Esc to pause'],
+        mobile: ['Left thumb: floating move stick', 'Right thumb: aim and auto-fire', 'Dash button by the right stick'],
       },
       orientation: 'landscape',
       category: 'arcade',

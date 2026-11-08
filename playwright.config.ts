@@ -26,11 +26,11 @@ export default defineConfig({
   projects: [
     {
       name: 'phone-375x667',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 375, height: 667 }, isMobile: false },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 375, height: 667 }, isMobile: false, hasTouch: true },
     },
     {
       name: 'phone-390x844',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: false },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: false, hasTouch: true },
     },
     {
       name: 'tablet-768x1024',
